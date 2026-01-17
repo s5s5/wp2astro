@@ -1,0 +1,1680 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>[米随随] s5s5 - Pixel Portal</title>
+    <!-- 引入 JetBrains Mono 字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- 0. RESET & BASE --- */
+      :root {
+        /* 回归 K10k 经典高对比配色 */
+        --bg-color: #6a7680; /* 经典的蓝灰色背景 */
+        --container-bg: #999; /* 网格分割线颜色 */
+        --border-color: #000; /* 纯黑边框 */
+
+        --cell-bg: #fff; /* 纯白内容背景 */
+        --cell-bg-alt: #f1f3f5; /* 侧边栏浅灰背景 */
+
+        --highlight: #ffcc00; /* 像素黄 (Pixel Yellow) */
+        --highlight-text: #000;
+
+        --text-main: #333;
+        --text-muted: #666;
+
+        --link-color: #4a5a6a;
+        --link-hover: #ff6600; /* 活力橙 */
+
+        --font-stack: "Verdana", "Geneva", sans-serif;
+        --font-mono:
+          "JetBrains Mono", "Courier New", monospace; /* 更新字体栈 */
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background-color: var(--bg-color);
+        background-image: radial-gradient(#5a6670 1px, transparent 1px);
+        background-size: 4px 4px;
+        font-family: var(--font-stack);
+        font-size: 11px;
+        color: var(--text-main);
+        line-height: 1.5;
+        padding: 20px 0;
+        -webkit-font-smoothing: none;
+      }
+
+      /* --- 1. UTILITIES --- */
+      .text-mono {
+        font-family: var(--font-mono);
+        font-size: 10px;
+      }
+      .upper {
+        text-transform: uppercase;
+      }
+      .bold {
+        font-weight: bold;
+      }
+      .pixel-border {
+        border: 1px solid var(--border-color);
+      }
+
+      a {
+        text-decoration: none;
+        color: var(--link-color);
+        transition: none;
+      }
+      a:hover {
+        color: var(--link-hover);
+        background: #eee;
+      }
+
+      /* --- 2. LAYOUT --- */
+      .container {
+        width: 100%;
+        max-width: 1111px; /* Adjusted to 1111px as requested */
+        margin: 0 auto;
+        background-color: var(--container-bg); /* 这里形成了 1px 的网格线 */
+        border: 1px solid var(--border-color);
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+
+        display: grid;
+        /* Modified right column to 220px to fit 88px buttons comfortably */
+        grid-template-columns: 160px 1fr 220px;
+        gap: 1px; /* 关键：露出背景色形成分割线 */
+      }
+
+      .cell {
+        background-color: var(--cell-bg);
+        overflow: hidden;
+      }
+      .cell-pad {
+        padding: 12px;
+      }
+      .cell-alt {
+        background-color: var(--cell-bg-alt);
+      }
+
+      .cell-header {
+        background: #e0e0e0;
+        background-image: linear-gradient(to bottom, #fff, #ddd);
+        padding: 6px 8px;
+        font-size: 10px;
+        font-weight: bold;
+        color: #555;
+        text-transform: uppercase;
+        border-bottom: 1px solid #ccc;
+        letter-spacing: 1px;
+      }
+
+      /* --- 3. RESPONSIVE --- */
+      @media (max-width: 800px) {
+        body {
+          padding: 0;
+        }
+        .container {
+          border: none;
+          box-shadow: none;
+          grid-template-columns: 1fr;
+          gap: 1px;
+        }
+        .header-row {
+          order: 1;
+          height: auto;
+          min-height: 80px;
+        }
+        .header-nav {
+          position: static !important;
+          margin-top: 10px;
+          justify-content: center;
+          background: rgba(255, 255, 255, 0.9);
+          border-top: 1px solid #000;
+          padding: 5px;
+        }
+        main.cell {
+          order: 2;
+        }
+        .sidebar-l {
+          order: 3;
+        }
+        .sidebar-r {
+          order: 4;
+        }
+        .footer-row {
+          order: 5;
+        }
+        .site-area {
+          padding-bottom: 0 !important;
+        }
+      }
+
+      /* --- 4. HEADER STYLES --- */
+      .header-row {
+        grid-column: 1 / -1;
+        /* 顶部背景：改为斜线背景 (Diagonal Scanlines) */
+        background-color: #e8ebed;
+        height: 90px;
+        position: relative;
+        border-bottom: 1px solid var(--border-color);
+
+        /* 斜线纹理 - 模拟无信号/占位符粗糙感 */
+        background-image: repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 2px,
+          rgba(0, 0, 0, 0.03) 2px,
+          rgba(0, 0, 0, 0.03) 4px
+        );
+      }
+
+      .header-top-bar {
+        height: 5px;
+        background: #333;
+        border-bottom: 1px solid #000;
+      }
+
+      .site-area {
+        position: absolute;
+        bottom: 15px;
+        left: 20px;
+        z-index: 2;
+        /* 去掉背景框，让文字直接浮在斜线上，或者保留纯白背景 */
+        background: #fff;
+        padding: 5px 12px;
+        border: 1px solid #000;
+        box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.15); /* 稍微加重阴影 */
+      }
+
+      .site-title {
+        /* 使用 JetBrains Mono */
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 800; /* Extra Bold */
+        font-size: 24px;
+        color: #000;
+        line-height: 1;
+        letter-spacing: -1px;
+        text-transform: uppercase;
+      }
+
+      .site-description {
+        font-size: 9px;
+        color: #555;
+        font-family: var(--font-mono);
+        margin-top: 6px;
+        display: block;
+        border-top: 1px solid #eee;
+        padding-top: 4px;
+      }
+
+      /* --- 5. INTEGRATED NAVIGATION (Micro Nav) --- */
+      .header-nav {
+        position: absolute;
+        bottom: 15px;
+        right: 20px;
+        display: flex;
+        gap: 4px;
+        background: #fff;
+        padding: 4px;
+        border: 1px solid #000;
+      }
+
+      .nav-btn {
+        background: #fff;
+        border: 1px solid #ccc;
+        color: #333;
+        font-size: 10px;
+        font-weight: bold;
+        text-transform: uppercase;
+        padding: 4px 10px;
+        cursor: pointer;
+        font-family: var(--font-stack);
+        box-shadow: 1px 1px 0 #ccc;
+        transition: all 0s; /* Pixel perfect sharp change */
+      }
+
+      .nav-btn:hover,
+      .nav-btn.active {
+        background: var(--highlight);
+        color: #000;
+        border-color: #000;
+        box-shadow: 1px 1px 0 #000;
+        transform: translate(-1px, -1px);
+      }
+
+      /* --- 6. CONTENT STYLES --- */
+      .post-card {
+        border-bottom: 1px solid #ccc;
+        margin-bottom: 0;
+        background: #fff;
+        padding-bottom: 20px;
+      }
+      .post-card:last-child {
+        border-bottom: none;
+      }
+
+      .post-hero-img-box {
+        width: 100%;
+        height: 220px;
+        overflow: hidden;
+        position: relative;
+        background: #f0f0f0; /* Neutral grey base for canvas */
+        border-bottom: 1px solid #000;
+      }
+
+      /* Canvas rendering pixel art */
+      .post-hero-canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+        /* Critical for pixel art look */
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+      }
+
+      .post-overlay-cat {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: #000;
+        color: var(--highlight);
+        padding: 3px 6px;
+        font-size: 9px;
+        font-family: var(--font-mono);
+        border: 1px solid #fff;
+        z-index: 2;
+        box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
+      }
+
+      .post-body {
+        padding: 15px 20px 0 20px;
+      }
+
+      .post-title {
+        font-size: 16px;
+        font-weight: bold;
+        color: #000;
+        margin-bottom: 6px;
+        letter-spacing: -0.5px;
+      }
+
+      .post-card:hover .post-title {
+        color: var(--link-hover);
+      }
+
+      .post-meta {
+        font-size: 9px;
+        color: #999;
+        font-family: var(--font-mono);
+        margin-bottom: 10px;
+      }
+
+      .post-excerpt {
+        color: #555;
+        font-size: 11px;
+        line-height: 1.6;
+        margin-bottom: 12px;
+      }
+
+      .btn-read {
+        display: inline-block;
+        background: #fff;
+        border: 1px solid #999;
+        color: #333;
+        padding: 3px 8px;
+        font-size: 9px;
+        cursor: pointer;
+        box-shadow: 1px 1px 0 #ccc;
+      }
+      .btn-read:hover {
+        background: var(--highlight);
+        border-color: #000;
+        color: #000;
+        box-shadow: 1px 1px 0 #000;
+      }
+
+      /* Comments & Form Styles */
+      .comment-box {
+        margin-top: 30px;
+        border-top: 1px dotted #999;
+        padding-top: 20px;
+        background: #fdfdfd;
+        padding-left: 20px;
+        padding-right: 20px;
+        padding-bottom: 20px;
+      }
+      .comment-header-title {
+        font-weight: bold;
+        font-size: 11px;
+        margin-bottom: 15px;
+        color: #333;
+        background: #eee;
+        display: inline-block;
+        padding: 2px 6px;
+      }
+      .comment-item {
+        margin-bottom: 15px;
+        font-family: var(--font-stack);
+        font-size: 10px;
+      }
+      .comment-head {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 4px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 2px;
+      }
+      .comment-user {
+        font-weight: bold;
+        color: #444;
+      }
+      .comment-date {
+        color: #999;
+        font-family: var(--font-mono);
+      }
+      .comment-text {
+        color: #666;
+        line-height: 1.4;
+      }
+
+      .comment-reply-list {
+        margin-left: 25px;
+        margin-top: 10px;
+        padding-left: 10px;
+        border-left: 1px dotted #999;
+      }
+
+      .comment-form-area {
+        margin-top: 25px;
+        background: #f1f3f5;
+        padding: 15px;
+        border: 1px solid #ccc;
+      }
+      .form-row {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+      .form-input {
+        flex: 1;
+        border: 1px solid #999;
+        padding: 6px;
+        font-size: 10px;
+        font-family: var(--font-mono);
+        background: #fff;
+      }
+      .form-submit {
+        background: var(--highlight);
+        border: 1px solid #000;
+        color: #000;
+        font-weight: bold;
+        padding: 0 20px;
+        cursor: pointer;
+        font-size: 10px;
+        flex: 0 0 auto;
+        box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
+      }
+      .form-submit:hover {
+        background: #fff;
+        transform: translate(1px, 1px);
+        box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.1);
+      }
+
+      /* Pagination Styles */
+      .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+        padding: 20px 0;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        border-top: 1px solid #ccc;
+        background: #fff;
+        margin-top: 1px; /* Gap for grid line */
+      }
+      .page-btn {
+        border: 1px solid #ccc;
+        padding: 4px 8px;
+        cursor: pointer;
+        color: #555;
+        background: #fff;
+        text-decoration: none;
+      }
+      .page-btn:hover,
+      .page-btn.active {
+        border-color: #000;
+        background: var(--highlight);
+        color: #000;
+      }
+
+      /* Sidebar Links */
+      .menu-link {
+        display: block;
+        padding: 6px 10px;
+        border-bottom: 1px solid #eee;
+        color: #555;
+      }
+      .menu-link:hover {
+        background: #333;
+        color: #fff;
+        border-left: 4px solid var(--highlight);
+      }
+
+      /* 3D Calendar Styles */
+      .calendar-3d-wrapper {
+        background: #ddd;
+        border: 1px solid #fff;
+        border-right-color: #555;
+        border-bottom-color: #555;
+        padding: 6px;
+        font-family: var(--font-mono);
+      }
+
+      .cal-nav-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+        background: #333;
+        color: #fff;
+        padding: 2px;
+        border: 1px solid #000;
+        box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.2);
+      }
+
+      .cal-btn {
+        background: #ccc;
+        border: 1px solid #fff;
+        border-right-color: #444;
+        border-bottom-color: #444;
+        color: #000;
+        font-size: 9px;
+        width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        line-height: 1;
+      }
+      .cal-btn:active {
+        border: 1px solid #444;
+        border-right-color: #fff;
+        border-bottom-color: #fff;
+        background: #aaa;
+      }
+
+      .calendar-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 2px;
+        font-size: 9px;
+        text-align: center;
+      }
+      .calendar-table th {
+        font-weight: normal;
+        color: #666;
+        font-size: 8px;
+      }
+      .calendar-table td {
+        background: #eee;
+        border: 1px solid #fff; /* Inset look part 1 */
+        border-right-color: #999;
+        border-bottom-color: #999;
+        color: #333;
+        padding: 2px;
+        cursor: pointer;
+      }
+      .calendar-table td:hover {
+        background: #fff;
+      }
+      .cal-today {
+        background: var(--highlight) !important;
+        color: #000 !important;
+        font-weight: bold;
+        border: 1px solid #000 !important;
+        box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.2);
+      }
+
+      /* New style for dates with posts */
+      .cal-has-post {
+        /* 淡黄色，比 --highlight (#ffcc00) 更柔和 */
+        background-color: #ffee99 !important;
+        color: #333 !important;
+        font-weight: bold;
+        border: 1px solid #cca300 !important; /* 深一点的黄色边框 */
+      }
+
+      /* === NEW: iPod Style Player === */
+      .pod-player {
+        background: #fff; /* White glossy look */
+        border: 1px solid #ccc;
+        border-radius: 4px; /* Slightly rounded */
+        padding: 10px;
+        box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
+        text-align: center;
+      }
+      .pod-screen {
+        background: #f4f8fb; /* Light blueish LCD */
+        border: 1px solid #dce1e4;
+        border-radius: 2px;
+        padding: 6px;
+        margin-bottom: 10px;
+        font-family: var(--font-mono);
+        font-size: 9px;
+        color: #556677;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.05);
+      }
+      .pod-wheel {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: #f5f5f5;
+        border: 1px solid #ddd;
+        margin: 0 auto;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .pod-btn-center {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #fff;
+        border: 1px solid #eee;
+        box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+      }
+      .pod-btn-center:active {
+        background: #eee;
+        box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.1);
+      }
+      .pod-control-icon {
+        position: absolute;
+        font-size: 8px;
+        color: #999;
+        font-weight: bold;
+        font-family: sans-serif;
+        cursor: pointer;
+      }
+      .pod-top {
+        top: 4px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      .pod-bottom {
+        bottom: 4px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      .pod-left {
+        left: 4px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+      .pod-right {
+        right: 4px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+
+      /* Ad Grid Styles */
+      .ad-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4px;
+        margin-bottom: 10px;
+      }
+      .ad-box {
+        background: #eee;
+        border: 1px solid #ccc;
+        height: 31px; /* Adjusted to 88x31 style height */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 8px;
+        color: #999;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer; /* Added cursor */
+      }
+      .ad-box:hover {
+        border-color: #000;
+        color: #000;
+        background: var(--highlight);
+      }
+      .scanlines-sm {
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 2px,
+          rgba(0, 0, 0, 0.05) 2px,
+          rgba(0, 0, 0, 0.05) 4px
+        );
+        pointer-events: none;
+      }
+
+      /* Micro Buttons (88x31) Grid */
+      .micro-btn-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2px;
+      }
+      .micro-button {
+        height: 31px;
+        background: #000;
+        border: 1px solid #fff;
+        color: #fff;
+        font-size: 8px;
+        font-family: "Pixel", sans-serif; /* Fallback */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        line-height: 1;
+        cursor: pointer;
+        text-decoration: none;
+      }
+      .micro-button:hover {
+        border-color: var(--highlight);
+        color: var(--highlight);
+      }
+
+      /* Emoji Badge Grid with Mosaic Filter */
+      .emoji-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+      }
+      .emoji-badge {
+        aspect-ratio: 1;
+        background: #fff;
+        border: 1px solid #ccc; /* Lighter border */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        cursor: pointer;
+        box-shadow: 1px 1px 0 #eee;
+        transition: transform 0.1s;
+        /* MOSAIC EFFECT SIMULATION */
+        /* High contrast + Saturation adjust to make it look "fried" or pixelated */
+        filter: grayscale(100%); /* Default to grayscale */
+      }
+      .emoji-badge:hover {
+        background: #f9f9f9;
+        border-color: #999;
+        filter: grayscale(0%); /* Reveal true emoji on hover */
+        transform: translate(-1px, -1px);
+      }
+
+      /* === NEW: Light Stats Counter Styles === */
+      .counter-box {
+        display: flex;
+        gap: 2px;
+        justify-content: center;
+        background: #fff; /* White bg */
+        padding: 4px;
+        border: 1px solid #ccc;
+        margin-bottom: 8px;
+      }
+      .counter-digit {
+        background: #fff;
+        color: #333; /* Dark text */
+        font-family: var(--font-mono);
+        font-weight: bold;
+        font-size: 11px;
+        width: 16px;
+        text-align: center;
+        border: 1px solid #eee;
+        border-bottom: 2px solid #ddd; /* Slight 3D feel */
+        border-radius: 2px;
+      }
+      .stat-row {
+        display: flex;
+        justify-content: space-between;
+        font-family: var(--font-mono);
+        font-size: 9px;
+        color: #777; /* Lighter text */
+        border-bottom: 1px dotted #eee;
+        padding: 2px 0;
+      }
+
+      /* Footer */
+      .footer-row {
+        grid-column: 1 / -1;
+        background: #222;
+        color: #777;
+        padding: 15px;
+        text-align: center;
+        border-top: 1px solid #000;
+        font-family: var(--font-mono);
+        font-size: 9px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- HEADER -->
+      <header class="header-row">
+        <div class="header-top-bar"></div>
+        <div class="logo-area">
+          <div class="logo-main">[米随随] s5s5</div>
+          <div class="logo-sub">// 基于人类交互 / 想象决定应用</div>
+        </div>
+        <nav class="header-nav">
+          <button class="nav-btn active">Home</button>
+          <button class="nav-btn">First Category</button>
+          <button class="nav-btn">Other</button>
+          <button class="nav-btn">About Me</button>
+        </nav>
+      </header>
+
+      <!-- LEFT SIDEBAR -->
+      <aside class="cell sidebar-l">
+        <div class="cell-header">:: MUSIC</div>
+        <div class="cell-pad" style="background: #f9f9f9; padding: 10px">
+          <div class="pod-player">
+            <div class="pod-screen">
+              <marquee scrollamount="2">Song: Lofi_Dream.mp3</marquee>
+            </div>
+            <div class="pod-wheel">
+              <div class="pod-control-icon pod-top">MENU</div>
+              <div class="pod-control-icon pod-bottom">||</div>
+              <div class="pod-control-icon pod-left">|&lt;</div>
+              <div class="pod-control-icon pod-right">&gt;|</div>
+              <button class="pod-btn-center"></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="cell-header" style="margin-top: 1px">:: BADGES</div>
+        <div class="cell-pad cell-alt">
+          <div class="emoji-grid">
+            <div class="emoji-badge" title="Cool">😎</div>
+            <div class="emoji-badge" title="Pixel Art">👾</div>
+            <div class="emoji-badge" title="Coding">💻</div>
+            <div class="emoji-badge" title="Coffee">☕</div>
+            <div class="emoji-badge" title="Music">🎵</div>
+            <div class="emoji-badge" title="Idea">💡</div>
+            <div class="emoji-badge" title="Camera">📷</div>
+            <div class="emoji-badge" title="Game">🕹️</div>
+            <div class="emoji-badge" title="Save">💾</div>
+          </div>
+        </div>
+
+        <div class="cell-header" style="margin-top: 1px">:: STATS</div>
+        <div class="cell-pad">
+          <div
+            style="
+              text-align: center;
+              font-size: 9px;
+              color: #999;
+              margin-bottom: 4px;
+              font-family: var(--font-mono);
+            "
+          >
+            VISITORS
+          </div>
+          <div class="counter-box">
+            <span class="counter-digit">0</span
+            ><span class="counter-digit">8</span
+            ><span class="counter-digit">4</span>
+            <span class="counter-digit">2</span
+            ><span class="counter-digit">1</span
+            ><span class="counter-digit">9</span>
+          </div>
+          <div style="margin-top: 8px">
+            <div class="stat-row">
+              <span>ONLINE:</span
+              ><span style="color: #555; font-weight: bold">12</span>
+            </div>
+            <div class="stat-row"><span>TODAY:</span><span>143</span></div>
+            <div class="stat-row"><span>SINCE:</span><span>2003</span></div>
+          </div>
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              gap: 4px;
+              margin-top: 8px;
+              opacity: 0.4;
+            "
+          >
+            <div
+              style="
+                width: 10px;
+                height: 10px;
+                background: #f90;
+                border-radius: 50%;
+              "
+              title="Firefox"
+            ></div>
+            <div
+              style="
+                width: 10px;
+                height: 10px;
+                background: #09c;
+                border-radius: 50%;
+              "
+              title="IE"
+            ></div>
+            <div
+              style="
+                width: 10px;
+                height: 10px;
+                background: #d00;
+                border-radius: 50%;
+              "
+              title="Opera"
+            ></div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- CENTER MAIN CONTENT -->
+      <main class="cell" id="main-content-area">
+        <!-- JS will render Hero Posts with Canvas here -->
+      </main>
+
+      <!-- RIGHT SIDEBAR -->
+      <aside class="cell sidebar-r">
+        <div class="cell-header">:: PROFILE</div>
+        <div class="cell-pad" style="padding-bottom: 5px">
+          <div
+            style="
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              margin-bottom: 10px;
+            "
+          >
+            <div
+              style="
+                width: 80px;
+                height: 80px;
+                background: #eee;
+                border: 1px solid #000;
+                margin-bottom: 8px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                box-shadow: 2px 2px 0 #ccc;
+              "
+            >
+              <span
+                style="
+                  font-family: &quot;JetBrains Mono&quot;;
+                  font-weight: 800;
+                  font-size: 20px;
+                  color: #333;
+                "
+                >S5</span
+              >
+            </div>
+            <div class="bold" style="font-size: 12px; margin-bottom: 2px">
+              Xiaochao Liu
+            </div>
+          </div>
+          <div
+            class="text-mono"
+            style="
+              font-size: 9px;
+              color: #555;
+              line-height: 1.6;
+              border-top: 1px dotted #ccc;
+              padding-top: 8px;
+            "
+          >
+            <div style="margin-bottom: 4px">> Front-end</div>
+            <div style="margin-bottom: 8px">> Loc: Chengdu, China</div>
+            <div style="display: grid; gap: 4px">
+              <a
+                href="https://linkedin.com/in/s5s5"
+                target="_blank"
+                style="
+                  display: block;
+                  background: #eee;
+                  padding: 2px 4px;
+                  border: 1px solid #ccc;
+                  text-align: center;
+                "
+                >[ LinkedIn ]</a
+              >
+              <a
+                href="https://github.com/s5s5"
+                target="_blank"
+                style="
+                  display: block;
+                  background: #eee;
+                  padding: 2px 4px;
+                  border: 1px solid #ccc;
+                  text-align: center;
+                "
+                >[ Github ]</a
+              >
+              <a
+                href="mailto:s5s5cn@gmail.com"
+                style="
+                  display: block;
+                  background: #eee;
+                  padding: 2px 4px;
+                  border: 1px solid #ccc;
+                  text-align: center;
+                "
+                >[ Mail ]</a
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="cell-header" style="margin-top: 1px">:: CALENDAR</div>
+        <div class="cell-pad" style="padding: 10px 8px">
+          <div class="calendar-3d-wrapper">
+            <div class="cal-nav-row">
+              <button class="cal-btn">&lt;</button>
+              <span style="font-weight: bold">DEC 2025</span>
+              <button class="cal-btn">&gt;</button>
+            </div>
+            <table class="calendar-table">
+              <thead>
+                <tr>
+                  <td>S</td>
+                  <td>M</td>
+                  <td>T</td>
+                  <td>W</td>
+                  <td>T</td>
+                  <td>F</td>
+                  <td>S</td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="color: #999; border-color: #ddd">30</td>
+                  <td>1</td>
+                  <td>2</td>
+                  <td>3</td>
+                  <td>4</td>
+                  <td class="cal-has-post">5</td>
+                  <td>6</td>
+                </tr>
+                <tr>
+                  <td>7</td>
+                  <td>8</td>
+                  <td>9</td>
+                  <td>10</td>
+                  <td>11</td>
+                  <td class="cal-has-post">12</td>
+                  <td>13</td>
+                </tr>
+                <tr>
+                  <td>14</td>
+                  <td>15</td>
+                  <td>16</td>
+                  <td>17</td>
+                  <td>18</td>
+                  <td class="cal-has-post">19</td>
+                  <td>20</td>
+                </tr>
+                <tr>
+                  <td>21</td>
+                  <td>22</td>
+                  <td class="cal-has-post">23</td>
+                  <td>24</td>
+                  <td class="cal-has-post">25</td>
+                  <td class="cal-today">26</td>
+                  <td>27</td>
+                </tr>
+                <tr>
+                  <td>28</td>
+                  <td>29</td>
+                  <td>30</td>
+                  <td>31</td>
+                  <td style="color: #999; border-color: #ddd">1</td>
+                  <td style="color: #999; border-color: #ddd">2</td>
+                  <td style="color: #999; border-color: #ddd">3</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="cell-header" style="margin-top: 1px">:: LINK</div>
+        <div class="cell-pad cell-alt">
+          <div class="ad-grid">
+            <div class="ad-box">
+              <div class="scanlines-sm"></div>
+              <span>YOUR_LINK</span>
+            </div>
+            <div class="ad-box">
+              <div class="scanlines-sm"></div>
+              <span>PIXEL_ART</span>
+            </div>
+            <div class="ad-box">
+              <div class="scanlines-sm"></div>
+              <span>K10K.NET</span>
+            </div>
+            <div class="ad-box">
+              <div class="scanlines-sm"></div>
+              <span>DESIGN</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- FOOTER -->
+      <footer class="footer-row">
+        &copy; 2024-2025 [米随随] s5s5. ALL RIGHTS RESERVED. <br />
+        DESIGNED FOR HUMAN INTERACTION.
+      </footer>
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+      const posts = [
+        {
+          title: "探索数字边界",
+          date: "2024-10-25",
+          cat: "First Category",
+          weather: "Lightning", // 雷电 - 赛博/数字
+          excerpt:
+            "沉浸在像素完美的失落艺术中。有限的分辨率如何在现代网页设计中激发无限的想象力。不仅仅是怀旧，更是一种对精确度的致敬。"
+        },
+        {
+          title: "信息的架构",
+          date: "2024-10-24",
+          cat: "First Category",
+          weather: "Fog", // 雾 - 架构/结构
+          excerpt:
+            "构建经得起时间考验的结构。为什么网格布局不仅仅是一个CSS属性，更是一种哲学。它代表了秩序与混乱之间的平衡。"
+        },
+        {
+          title: "午夜编程时光",
+          date: "2024-10-23",
+          cat: "First Category",
+          weather: "Rain", // 雨 - 深夜/安静
+          excerpt:
+            "凌晨3点有一种独特的寂静。唯一的声音是键盘的机械敲击声和服务器的嗡嗡声。这是创造力最纯粹的时刻，也是灵感迸发的源泉。"
+        },
+        {
+          title: "复古游戏复兴",
+          date: "2024-10-22",
+          cat: "First Category",
+          weather: "Sunny", // 晴 - 游戏/明亮
+          excerpt:
+            "为什么我们不断回顾8位经典。这不仅仅是怀旧，而是关于纯粹的游戏机制。简单的图形背后，隐藏着最复杂的设计智慧。"
+        },
+        {
+          title: "Markdown 样式全功能展示",
+          date: "2024-10-20",
+          cat: "Docs",
+          weather: "Snow", // 雪 - 文档/冷静
+          comments: [
+            {
+              user: "PixelFan_01",
+              date: "2024-10-21 10:00",
+              content: "这篇文章排版很棒！很有 K10k 当年的感觉。",
+              replies: [
+                {
+                  user: "s5s5",
+                  date: "2024-10-21 10:05",
+                  content: "谢谢支持！我会继续保持这种风格。",
+                  isAuthor: true
+                }
+              ]
+            },
+            {
+              user: "Guest_88",
+              date: "2024-10-22 14:20",
+              content: "代码块的配色也很舒服，是 Monokai 吗？",
+              replies: []
+            }
+          ],
+          excerpt: `
+                <p style="margin-bottom:8px;">这是一篇展示常用 <strong>Markdown</strong> 语法的测试文章。</p>
+                <h3 style="font-size:14px; font-weight:bold; margin:15px 0 8px 0; border-bottom:1px solid #eee; padding-bottom:4px;">1. 文本样式</h3>
+                <p>我们可以使用 <strong>加粗 (Bold)</strong>，<em>斜体 (Italic)</em>，以及 <span style="text-decoration:line-through; color:#999;">删除线 (Strike)</span>。</p>
+                <h3 style="font-size:14px; font-weight:bold; margin:15px 0 8px 0; border-bottom:1px solid #eee; padding-bottom:4px;">2. 列表展示</h3>
+                <ul style="list-style-type: square; margin-left: 20px; color:#555; margin-bottom:10px;">
+                    <li>第一点：结构化数据的重要性</li>
+                    <li>第二点：清晰的排版提升阅读体验</li>
+                </ul>
+                <h3 style="font-size:14px; font-weight:bold; margin:15px 0 8px 0; border-bottom:1px solid #eee; padding-bottom:4px;">3. 代码块</h3>
+                <div style="background:#2d2d2d; color:#ccc; border:1px solid #000; padding:12px; font-family:'JetBrains Mono', monospace; font-size:10px; margin:10px 0; border-radius:4px; overflow-x:auto;">
+<span style="color:#cc99cd;">function</span> <span style="color:#61aeee;">init</span>() {
+  <span style="color:#e6c07b;">console</span>.<span style="color:#61aeee;">log</span>(<span style="color:#98c379;">\`Ready\`</span>);
+}
+                </div>
+            `
+        }
+      ];
+
+      // 更新 Weather 属性以匹配7种类型
+      posts[0].weather = "Lightning"; // 闪电
+      posts[1].weather = "Fog"; // 雾
+      posts[2].weather = "Rain"; // 雨
+      posts[3].weather = "Sunny"; // 晴
+      posts[4].weather = "Snow"; // 雪
+      // 增加更多文章来展示 阴 和 多云
+      posts.splice(3, 0, {
+        title: "阴天随笔",
+        date: "2024-10-22",
+        cat: "Life",
+        weather: "Overcast", // 阴
+        excerpt: "一个灰色的下午，适合思考和发呆。"
+      });
+      posts.splice(4, 0, {
+        title: "多云转晴",
+        date: "2024-10-21",
+        cat: "Design",
+        weather: "Cloudy", // 多云
+        excerpt: "云层的变化给天空带来了丰富的层次感。"
+      });
+
+      const mainArea = document.getElementById("main-content-area");
+
+      // Weather Translation Map
+      const weatherMap = {
+        Lightning: "闪电",
+        Fog: "雾",
+        Rain: "雨",
+        Sunny: "晴",
+        Snow: "雪",
+        Overcast: "阴",
+        Cloudy: "多云"
+      };
+
+      function renderComments(comments) {
+        if (!comments || comments.length === 0) return "";
+        return comments
+          .map(
+            (c) => `
+            <div class="comment-item">
+                <div class="comment-head">
+                    <span class="comment-user">${c.user} ${c.isAuthor ? '<span style="background:#000;color:#fff;padding:0 2px;font-size:8px;">AUTHOR</span>' : ""}</span>
+                    <span class="comment-date">${c.date}</span>
+                </div>
+                <div class="comment-text">${c.content}</div>
+                ${c.replies && c.replies.length > 0 ? `<div class="comment-reply-list">${renderComments(c.replies)}</div>` : ""}
+            </div>
+        `
+          )
+          .join("");
+      }
+
+      posts.forEach((post, index) => {
+        const card = document.createElement("div");
+        card.className = "post-card";
+
+        let commentsHTML = "";
+        if (post.comments) {
+          commentsHTML = `
+                <div class="comment-box">
+                    <div class="comment-header-title">:: 评论列表 (${post.comments.length})</div>
+                    ${renderComments(post.comments)}
+                    <div class="comment-form-area">
+                        <div style="font-weight:bold; font-size:10px; margin-bottom:8px; color:#555;">LEAVE A REPLY:</div>
+                        <div class="form-row"><input type="text" class="form-input" placeholder="Name"><input type="email" class="form-input" placeholder="Email"></div>
+                        <div class="form-row"><input type="text" class="form-input" placeholder="Website (http://)"><button class="form-submit">SUBMIT</button></div>
+                        <textarea class="form-input" style="width:100%; margin-top:5px; height:60px;" placeholder="Your Message..."></textarea>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Use canvas instead of img
+        const canvasId = `hero-canvas-${index}`;
+
+        // Get Chinese Weather Name
+        const weatherCN = weatherMap[post.weather] || "";
+        const weatherLabel = post.weather
+          ? `${weatherCN} ${post.weather.toUpperCase()}`
+          : post.cat;
+
+        card.innerHTML = `
+            <div class="post-hero-img-box">
+                <div class="post-overlay-cat">${weatherLabel}</div>
+                <canvas id="${canvasId}" class="post-hero-canvas"></canvas>
+            </div>
+            <div class="post-body">
+                <div class="post-title">${post.title}</div>
+                <div class="post-meta">POSTED ON ${post.date} // BY s5s5 // IN ${post.cat} // 3 评论</div>
+                <div class="post-excerpt">${post.excerpt}</div>
+                <button class="btn-read">阅读全文 &gt;&gt;</button>
+            </div>
+            ${commentsHTML}
+        `;
+        mainArea.appendChild(card);
+
+        // Draw on the canvas after appending
+        const canvas = document.getElementById(canvasId);
+        if (canvas) {
+          // Set canvas resolution to match container size (1:1 pixel mapping)
+          canvas.width = canvas.parentElement.offsetWidth;
+          canvas.height = canvas.parentElement.offsetHeight;
+
+          // Map the post weather string to the lowercase format expected by the new function
+          let wType = (post.weather || "Sunny").toLowerCase();
+          // Simple mapping to match the 7 types to the logic
+          if (wType === "rain") wType = "rainy";
+          if (wType === "snow") wType = "snowy";
+          if (wType === "fog") wType = "foggy";
+
+          drawLifeInkArtEx(
+            canvas.getContext("2d"),
+            canvas.width,
+            canvas.height,
+            wType
+          );
+        }
+      });
+
+      // Pagination
+      const pagination = document.createElement("div");
+      pagination.className = "pagination";
+      pagination.innerHTML = `<a href="#" class="page-btn">[PREV]</a><a href="#" class="page-btn active">1</a><a href="#" class="page-btn">2</a><a href="#" class="page-btn">3</a><span style="padding:4px;">...</span><a href="#" class="page-btn">[NEXT]</a>`;
+      mainArea.appendChild(pagination);
+
+      // Nav Logic
+      document.querySelectorAll(".nav-btn").forEach((item) => {
+        item.addEventListener("click", function () {
+          document
+            .querySelectorAll(".nav-btn")
+            .forEach((n) => n.classList.remove("active"));
+          this.classList.add("active");
+        });
+      });
+
+      // --- User Provided Logic (Adapted for Light Theme & 7 Weathers) ---
+
+      function drawStickPersonEx(ctx, x, y, scale, weather, color, hairStyle) {
+        ctx.save();
+        ctx.strokeStyle = color || "#333";
+        ctx.fillStyle = color || "#333";
+        ctx.lineWidth = 2.4 * scale;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.beginPath();
+
+        // Standard Stick Figure Dimensions
+        const headR = 4 * scale;
+        const bodyLen = 15 * scale;
+        const armLen = 10 * scale;
+        const legLen = 12 * scale;
+
+        const headX = x;
+        const headY = y - bodyLen - legLen - headR * 0.5;
+        const neckY = headY + headR;
+        const hipY = neckY + bodyLen;
+
+        // 1. Draw Head
+        ctx.moveTo(headX + headR, headY);
+        ctx.arc(headX, headY, headR, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // 2. Draw Hair (New!)
+        ctx.beginPath();
+        if (hairStyle === 1) {
+          // Spikey
+          ctx.moveTo(headX - 3 * scale, headY - 3 * scale);
+          ctx.lineTo(headX - 5 * scale, headY - 8 * scale);
+          ctx.moveTo(headX, headY - 4 * scale);
+          ctx.lineTo(headX, headY - 9 * scale);
+          ctx.moveTo(headX + 3 * scale, headY - 3 * scale);
+          ctx.lineTo(headX + 5 * scale, headY - 8 * scale);
+        } else if (hairStyle === 2) {
+          // Flat Top / Cap
+          ctx.moveTo(headX - 4 * scale, headY - 2 * scale);
+          ctx.lineTo(headX + 4 * scale, headY - 2 * scale);
+          ctx.lineTo(headX, headY - 5 * scale);
+          ctx.closePath();
+          ctx.fill();
+        } else if (hairStyle === 3) {
+          // Long Hair / Ponytail
+          ctx.moveTo(headX, headY - 4 * scale);
+          ctx.quadraticCurveTo(
+            headX - 6 * scale,
+            headY,
+            headX - 5 * scale,
+            headY + 4 * scale
+          );
+          ctx.moveTo(headX, headY - 4 * scale);
+          ctx.quadraticCurveTo(
+            headX + 6 * scale,
+            headY,
+            headX + 5 * scale,
+            headY + 4 * scale
+          );
+        }
+        ctx.stroke();
+
+        // 3. Draw Body
+        ctx.beginPath();
+        ctx.moveTo(headX, neckY);
+        ctx.lineTo(headX, hipY);
+
+        // 4. Poses
+        const poseType = Math.floor(Math.random() * 3);
+
+        if (weather === "rainy" || weather === "snowy") {
+          // NO UMBRELLA - Huddled or running
+          if (poseType === 0) {
+            // Hands covering head
+            ctx.moveTo(headX, neckY + 5 * scale);
+            ctx.lineTo(headX - 6 * scale, headY - 2 * scale); // Left hand up
+            ctx.moveTo(headX, neckY + 5 * scale);
+            ctx.lineTo(headX + 6 * scale, headY - 2 * scale); // Right hand up
+          } else if (poseType === 1) {
+            // Running (arms bent)
+            ctx.moveTo(headX, neckY + 2 * scale);
+            ctx.lineTo(headX - 6 * scale, neckY + 8 * scale);
+            ctx.moveTo(headX, neckY + 2 * scale);
+            ctx.lineTo(headX + 6 * scale, neckY - 2 * scale);
+          } else {
+            // Huddled/Shivering
+            ctx.moveTo(headX, neckY + 4 * scale);
+            ctx.lineTo(headX - 4 * scale, hipY - 5 * scale);
+            ctx.moveTo(headX, neckY + 4 * scale);
+            ctx.lineTo(headX + 4 * scale, hipY - 5 * scale);
+          }
+          // Legs (Running or Standing)
+          ctx.moveTo(headX, hipY);
+          ctx.lineTo(headX - 5 * scale, y);
+          ctx.moveTo(headX, hipY);
+          ctx.lineTo(headX + 5 * scale, y);
+        } else if (weather === "sunny") {
+          if (poseType === 0) {
+            // Waving
+            ctx.moveTo(headX, neckY + 5 * scale);
+            ctx.lineTo(headX + 10 * scale, neckY - 8 * scale);
+            ctx.moveTo(headX, neckY + 5 * scale);
+            ctx.lineTo(headX - 6 * scale, neckY + 12 * scale);
+          } else {
+            // Hands on hips
+            ctx.moveTo(headX, neckY + 5 * scale);
+            ctx.lineTo(headX - 6 * scale, neckY + 8 * scale);
+            ctx.lineTo(headX, hipY - 2 * scale);
+            ctx.moveTo(headX, neckY + 5 * scale);
+            ctx.lineTo(headX + 6 * scale, neckY + 8 * scale);
+            ctx.lineTo(headX, hipY - 2 * scale);
+          }
+          ctx.moveTo(headX, hipY);
+          ctx.lineTo(headX - 6 * scale, y);
+          ctx.moveTo(headX, hipY);
+          ctx.lineTo(headX + 6 * scale, y);
+        } else if (weather === "lightning") {
+          // Shocked
+          ctx.moveTo(headX, neckY + 5 * scale);
+          ctx.lineTo(headX - 10 * scale, neckY - 10 * scale);
+          ctx.moveTo(headX, neckY + 5 * scale);
+          ctx.lineTo(headX + 10 * scale, neckY - 10 * scale);
+          const jumpY = y - 5 * scale;
+          ctx.moveTo(headX, hipY);
+          ctx.lineTo(headX - 8 * scale, jumpY);
+          ctx.moveTo(headX, hipY);
+          ctx.lineTo(headX + 8 * scale, jumpY);
+        } else {
+          // Default
+          ctx.moveTo(headX, neckY + 5 * scale);
+          ctx.lineTo(headX - 5 * scale, neckY + 12 * scale);
+          ctx.moveTo(headX, neckY + 5 * scale);
+          ctx.lineTo(headX + 5 * scale, neckY + 12 * scale);
+          ctx.moveTo(headX, hipY);
+          ctx.lineTo(headX - 4 * scale, y);
+          ctx.moveTo(headX, hipY);
+          ctx.lineTo(headX + 4 * scale, y);
+        }
+
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // Helper function to draw a winding river
+      function drawRiver(ctx, x, y, h) {
+        ctx.fillStyle = "rgba(100, 110, 120, 0.2)";
+        ctx.beginPath();
+
+        let cx = x;
+        let cy = y;
+        let width = 2;
+
+        let leftPoints = [];
+        let rightPoints = [];
+
+        while (cy < h) {
+          cx += Math.sin(cy * 0.02) * 8 + (Math.random() - 0.5) * 2;
+          cy += 4;
+          width += 0.9;
+
+          leftPoints.push({ x: cx - width / 2, y: cy });
+          rightPoints.push({ x: cx + width / 2, y: cy });
+        }
+
+        ctx.moveTo(x, y);
+        for (let p of leftPoints) ctx.lineTo(p.x, p.y);
+        for (let i = rightPoints.length - 1; i >= 0; i--) {
+          ctx.lineTo(rightPoints[i].x, rightPoints[i].y);
+        }
+
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // Helper to get Y position on a jagged line segment
+      function getGroundY(x, points) {
+        for (let i = 0; i < points.length - 1; i++) {
+          if (x >= points[i].x && x <= points[i + 1].x) {
+            const t = (x - points[i].x) / (points[i + 1].x - points[i].x);
+            return points[i].y + t * (points[i + 1].y - points[i].y);
+          }
+        }
+        return points[points.length - 1].y;
+      }
+
+      function drawLifeInkArtEx(ctx, w, h, weather) {
+        ctx.fillStyle =
+          weather === "overcast" || weather === "rainy" ? "#e0e0e0" : "#f0f0f0";
+        ctx.fillRect(0, 0, w, h);
+
+        const accent = "#ff6600";
+        const defaultLine = "rgba(0,0,0,0.4)";
+        const mountainFill = "rgba(0, 0, 0,";
+
+        // === 1. SUN (Draw ONCE) ===
+        if (weather === "sunny") {
+          ctx.save();
+          ctx.fillStyle = "#ffcc00";
+          ctx.beginPath();
+          const sunX = w * 0.8;
+          const sunY = h * 0.25;
+          const sunR = 25;
+          ctx.arc(sunX, sunY, sunR, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = "rgba(255, 204, 0, 0.3)";
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.arc(sunX, sunY, sunR + 5, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // === 2. OVERCAST LAYERS ===
+        if (weather === "overcast") {
+          ctx.save();
+          ctx.strokeStyle = "rgba(100, 100, 100, 0.3)";
+          ctx.lineWidth = 4;
+          for (let y = 10; y < h * 0.4; y += 15) {
+            const startX = Math.random() * w * 0.2;
+            const endX = w - Math.random() * w * 0.2;
+            ctx.beginPath();
+            ctx.moveTo(startX, y);
+            ctx.lineTo(endX, y);
+            ctx.stroke();
+          }
+          ctx.restore();
+        }
+
+        // === 3. MOUNTAINS (Capture Points for Walking) ===
+        let groundPoints = [];
+        let riverSources = [];
+
+        for (let i = 0; i < 3; i++) {
+          ctx.fillStyle = `${mountainFill} ${0.05 + i * 0.03})`;
+          ctx.beginPath();
+          ctx.moveTo(0, h);
+
+          let currentX = 0;
+          let currentY = h - (30 + Math.random() * 50 + i * 20);
+          ctx.lineTo(currentX, currentY);
+
+          let isWalkable = i === 1;
+          if (isWalkable) groundPoints.push({ x: currentX, y: currentY });
+
+          while (currentX < w) {
+            let segmentWidth = 100 + Math.random() * 150;
+            let nextX = currentX + segmentWidth;
+
+            let maxHeight = h * 0.66;
+            let minHeight = 30 + i * 30;
+            let nextY =
+              h - (Math.random() * (maxHeight - minHeight) + minHeight);
+            if (nextY > h) nextY = h - 20;
+
+            ctx.lineTo(nextX, nextY);
+
+            if (isWalkable) groundPoints.push({ x: nextX, y: nextY });
+            if (i >= 1 && nextY < h * 0.8)
+              riverSources.push({ x: nextX, y: nextY });
+
+            currentX = nextX;
+          }
+          ctx.lineTo(w, h);
+          ctx.lineTo(0, h);
+          ctx.fill();
+        }
+
+        // === 4. RIVER ===
+        riverSources.forEach((p) => {
+          if (Math.random() > 0.7) {
+            drawRiver(ctx, p.x, p.y, h);
+          }
+        });
+
+        // === 5. WEATHER PARTICLES ===
+        const density = 50;
+        ctx.lineWidth = 1.2;
+
+        for (let i = 0; i < density; i++) {
+          const x = Math.random() * w,
+            y = Math.random() * h * 0.85;
+          const size = Math.random() * 15 + 6;
+
+          ctx.globalAlpha = Math.random() * 0.5 + 0.25;
+          ctx.strokeStyle = defaultLine;
+
+          ctx.beginPath();
+          switch (weather) {
+            case "rainy":
+              ctx.moveTo(x, y);
+              ctx.lineTo(x + 4, y + size * 6);
+              ctx.stroke();
+              break;
+            case "snowy":
+              ctx.fillStyle = "#ffffff"; // PURE WHITE SNOW
+              ctx.globalAlpha = 0.8;
+              ctx.arc(x, y, 2, 0, Math.PI * 2);
+              ctx.fill();
+              break;
+            case "cloudy":
+              if (y < h * 0.5 && Math.random() > 0.6) {
+                ctx.fillStyle = "#fff";
+                ctx.globalAlpha = 0.6;
+                const cloudR = size;
+                ctx.arc(x, y, cloudR, 0, Math.PI * 2);
+                ctx.arc(x + cloudR, y + 5, cloudR * 0.8, 0, Math.PI * 2);
+                ctx.arc(x - cloudR, y + 5, cloudR * 0.8, 0, Math.PI * 2);
+                ctx.fill();
+              }
+              break;
+            case "overcast":
+              if (y > h * 0.7) {
+                ctx.strokeStyle = "rgba(0,0,0,0.1)";
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + 20, y);
+                ctx.stroke();
+              }
+              break;
+            case "foggy":
+              ctx.strokeStyle = "rgba(150,150,150,0.2)";
+              ctx.moveTo(x, y);
+              ctx.lineTo(x + w * 0.1, y);
+              ctx.stroke();
+              break;
+            case "lightning":
+              if (i < 2) {
+                ctx.strokeStyle = accent;
+                ctx.globalAlpha = 1;
+                let lx = x,
+                  ly = 0;
+                ctx.moveTo(lx, ly);
+                while (ly < h * 0.8) {
+                  lx += (Math.random() - 0.5) * 40;
+                  ly += Math.random() * 30 + 10;
+                  ctx.lineTo(lx, ly);
+                }
+                ctx.stroke();
+              }
+              break;
+          }
+        }
+
+        // === 6. STICK FIGURES (2 to 6 people) ===
+        const peopleCount = 2 + Math.floor(Math.random() * 5); // 2 to 6
+
+        for (let i = 0; i < peopleCount; i++) {
+          let px = 20 + Math.random() * (w - 40);
+          let py = getGroundY(px, groundPoints);
+
+          // Generate random dark grey for non-highlighted people
+          const greyVal = Math.floor(20 + Math.random() * 80); // 20-100 range
+          const randomGrey = `rgb(${greyVal},${greyVal},${greyVal})`;
+
+          const personColor = i === 0 ? accent : randomGrey;
+          const hairStyle = Math.floor(Math.random() * 4); // 0-3 hair types
+
+          // Scale variation: 0.5 to 1.3 (Simulating depth or different heights)
+          const randomScale = 0.5 + Math.random() * 0.8;
+
+          drawStickPersonEx(
+            ctx,
+            px,
+            py,
+            randomScale,
+            weather,
+            personColor,
+            hairStyle
+          );
+        }
+        ctx.globalAlpha = 1.0;
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,20 @@
+# IDE
+.idea/
+
+# Environment files with secrets
+env
+.env
+.env.*
+
+# Database dumps (may contain sensitive data)
+wordpress/db/*.sql
+scripts/data/*.sql
+scripts/data/*.txt
+scripts/data/*.db
+
+# Node modules
+node_modules/
+
+# OS files
+.DS_Store
+

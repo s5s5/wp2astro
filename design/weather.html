@@ -1,0 +1,890 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Canvas 像素天气画廊</title>
+    <style>
+      /* =========================================
+       1. VARIABLES & THEME
+       ========================================= */
+      :root {
+        /* 亮色模式 */
+        --bg-body: #f0f2f5;
+        --bg-color: #6a7680;
+        --container-bg: #999;
+        --border-color: #000;
+
+        --cell-bg: #fff;
+        --cell-bg-alt: #f1f3f5;
+
+        --highlight: #0073aa;
+        --highlight-text: #fff;
+
+        --text-main: #333;
+        --text-muted: #666;
+
+        /* Canvas 专属颜色 */
+        --canvas-bg: #f7f7f7;
+        --canvas-line: #535353;
+        --canvas-accent: #ff6600; /* 活力橙 */
+
+        /* Fonts */
+        --font-stack: "Verdana", "Geneva", sans-serif;
+        --font-mono: "Courier New", monospace;
+      }
+
+      /* 暗色模式 */
+      [data-theme="dark"] {
+        --bg-body: #1a1b1e;
+        --bg-color: #111;
+        --container-bg: #444;
+        --border-color: #666;
+
+        --cell-bg: #1e1e1e;
+        --cell-bg-alt: #252525;
+
+        --highlight: #0073aa;
+        --highlight-text: #fff;
+
+        --text-main: #ddd;
+        --text-muted: #888;
+
+        --canvas-bg: #202124;
+        --canvas-line: #acacac;
+        --canvas-accent: #ff6600;
+      }
+
+      /* =========================================
+       2. GLOBAL LAYOUT
+       ========================================= */
+      body {
+        background-color: var(--bg-body);
+        color: var(--text-main);
+        font-family: var(--font-stack);
+        margin: 0;
+        padding: 20px;
+        transition:
+          background-color 0.3s,
+          color 0.3s;
+      }
+
+      header {
+        max-width: 1200px;
+        margin: 0 auto 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 20px;
+        border-bottom: 2px solid var(--container-bg);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .theme-toggle {
+        background: var(--cell-bg);
+        border: 1px solid var(--container-bg);
+        color: var(--text-main);
+        padding: 8px 16px;
+        cursor: pointer;
+        font-family: var(--font-mono);
+        font-size: 14px;
+        border-radius: 4px;
+        transition: all 0.2s;
+      }
+      .theme-toggle:hover {
+        background: var(--cell-bg-alt);
+        border-color: var(--highlight);
+      }
+
+      /* =========================================
+       3. WEATHER GRID
+       ========================================= */
+      .weather-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 24px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      /* =========================================
+       4. WEATHER CARD COMPONENT
+       ========================================= */
+      article-weather {
+        display: block;
+        background: var(--cell-bg);
+        border: 1px solid var(--container-bg);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
+      }
+
+      article-weather:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .post-hero {
+        width: 100%;
+        height: 200px;
+        margin: 0;
+        overflow: hidden;
+        position: relative;
+        background: var(--cell-bg-alt);
+        border-bottom: 1px solid var(--container-bg);
+      }
+
+      .post-canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+        image-rendering: pixelated;
+      }
+
+      .post-canvas:hover {
+        filter: hue-rotate(185deg);
+      }
+
+      .post-weather {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: var(--text-main);
+        color: var(--bg-body);
+        padding: 4px 8px;
+        font-size: 12px;
+        font-family: var(--font-mono);
+        border: 1px solid var(--cell-bg);
+        z-index: 2;
+        box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
+        pointer-events: none;
+        font-weight: bold;
+        text-transform: uppercase;
+        max-width: 80%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .card-footer {
+        padding: 12px;
+        font-size: 12px;
+        color: var(--text-muted);
+        border-top: 1px solid var(--container-bg);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: var(--font-mono);
+      }
+
+      .card-footer span:last-child {
+        color: var(--highlight);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>🌤️ 像素天气画廊 (Lite Refactor)</h1>
+      <button id="themeBtn" class="theme-toggle">切换深色模式</button>
+    </header>
+
+    <main class="weather-grid" id="grid">
+      <!-- Weather cards injected here -->
+    </main>
+
+    <script>
+      // =========================================
+      // 1. 数据配置 (DATA)
+      // =========================================
+      const weatherTypes = [
+        { code: "0", name: "晴", key: "Clear sky", draw: "Sun" },
+        {
+          code: "1",
+          name: "晴到多云",
+          key: "Mainly clear",
+          draw: "Sun With Small Cloud"
+        },
+        {
+          code: "2",
+          name: "多云",
+          key: "Partly cloudy",
+          draw: "Sun Behind Small Cloud"
+        },
+        { code: "3", name: "阴", key: "Overcast", draw: "Cloud" },
+        { code: "45", name: "雾", key: "Fog", draw: "Fog" },
+        { code: "48", name: "雾凇", key: "Depositing rime fog", draw: "Fog" },
+        {
+          code: "51",
+          name: "毛毛雨",
+          key: "Drizzle: Light",
+          draw: "Sun Behind Rain Cloud"
+        },
+        {
+          code: "53",
+          name: "中毛毛雨",
+          key: "Drizzle: Moderate",
+          draw: "Sun Behind Rain Cloud"
+        },
+        {
+          code: "55",
+          name: "大毛毛雨",
+          key: "Drizzle: Dense",
+          draw: "Sun Behind Rain Cloud"
+        },
+        {
+          code: "56",
+          name: "小冻毛毛雨",
+          key: "Freezing Drizzle: Light",
+          draw: "Cloud With Snow"
+        },
+        {
+          code: "57",
+          name: "大冻毛毛雨",
+          key: "Freezing Drizzle: Dense",
+          draw: "Cloud With Snow"
+        },
+        {
+          code: "61",
+          name: "小雨",
+          key: "Rain: Slight",
+          draw: "Cloud With Rain"
+        },
+        {
+          code: "63",
+          name: "中雨",
+          key: "Rain: Moderate",
+          draw: "Cloud With Rain"
+        },
+        {
+          code: "65",
+          name: "大雨",
+          key: "Rain: Heavy",
+          draw: "Cloud With Rain"
+        },
+        {
+          code: "66",
+          name: "小冻雨",
+          key: "Freezing Rain: Light",
+          draw: "Cloud With Snow"
+        },
+        {
+          code: "67",
+          name: "大冻雨",
+          key: "Freezing Rain: Heavy",
+          draw: "Cloud With Snow"
+        },
+        {
+          code: "71",
+          name: "小雪",
+          key: "Snow fall: Slight",
+          draw: "Snowflake"
+        },
+        {
+          code: "73",
+          name: "中雪",
+          key: "Snow fall: Moderate",
+          draw: "Snowflake"
+        },
+        {
+          code: "75",
+          name: "大雪",
+          key: "Snow fall: Heavy",
+          draw: "Snowflake"
+        },
+        { code: "77", name: "米雪", key: "Snow grains", draw: "Snowflake" },
+        {
+          code: "80",
+          name: "阵雨",
+          key: "Rain showers: Slight",
+          draw: "Sun Behind Rain Cloud"
+        },
+        {
+          code: "81",
+          name: "中阵雨",
+          key: "Rain showers: Moderate",
+          draw: "Sun Behind Rain Cloud"
+        },
+        {
+          code: "82",
+          name: "强阵雨",
+          key: "Rain showers: Violent",
+          draw: "Cloud With Lightning And Rain"
+        },
+        {
+          code: "85",
+          name: "小阵雪",
+          key: "Snow showers: Slight",
+          draw: "Cloud With Snow"
+        },
+        {
+          code: "86",
+          name: "大阵雪",
+          key: "Snow showers: Heavy",
+          draw: "Cloud With Snow"
+        },
+        {
+          code: "95",
+          name: "雷阵雨",
+          key: "Thunderstorm",
+          draw: "Cloud With Lightning And Rain"
+        },
+        {
+          code: "96",
+          name: "雷阵雨伴冰雹",
+          key: "Thunderstorm w/ hail",
+          draw: "Cloud With Lightning And Rain"
+        },
+        {
+          code: "99",
+          name: "强雷伴冰雹",
+          key: "Heavy Thunderstorm",
+          draw: "Cloud With Lightning And Rain"
+        }
+      ];
+
+      // =========================================
+      // 2. 核心重构: TinyP5 (微型绘图引擎)
+      // =========================================
+      class TinyP5 {
+        constructor(canvas) {
+          this.canvas = canvas;
+          this.ctx = canvas.getContext("2d", { alpha: false }); // 优化性能
+          this.width = canvas.width;
+          this.height = canvas.height;
+          this._fill = "#000";
+          this._stroke = "#000";
+          this._lineWidth = 1;
+        }
+
+        // 系统方法
+        resize(w, h, dpr = 1) {
+          this.width = w;
+          this.height = h;
+          this.canvas.width = w * dpr;
+          this.canvas.height = h * dpr;
+          this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+          this.ctx.scale(dpr, dpr);
+          this.ctx.imageSmoothingEnabled = false; // 像素风关键
+        }
+
+        background(col) {
+          this.ctx.fillStyle = col;
+          this.ctx.fillRect(0, 0, this.width, this.height);
+        }
+
+        // 样式方法
+        fill(col) {
+          this._fill = col;
+          this.ctx.fillStyle = col;
+        }
+
+        stroke(col) {
+          this._stroke = col;
+          this.ctx.strokeStyle = col;
+        }
+
+        strokeWeight(w) {
+          this._lineWidth = w;
+          this.ctx.lineWidth = w;
+        }
+
+        noStroke() {
+          this._stroke = null;
+        }
+
+        alpha(val) {
+          this.ctx.globalAlpha = val;
+        }
+
+        resetAlpha() {
+          this.ctx.globalAlpha = 1.0;
+        }
+
+        // 绘图形状
+        rect(x, y, w, h) {
+          if (this._fill) this.ctx.fillRect(x, y, w, h);
+          if (this._stroke) this.ctx.strokeRect(x, y, w, h);
+        }
+
+        circle(x, y, d) {
+          this.ctx.beginPath();
+          this.ctx.arc(x, y, d / 2, 0, Math.PI * 2);
+          if (this._fill) this.ctx.fill();
+          if (this._stroke) this.ctx.stroke();
+        }
+
+        line(x1, y1, x2, y2) {
+          if (!this._stroke) return;
+          this.ctx.beginPath();
+          this.ctx.moveTo(x1, y1);
+          this.ctx.lineTo(x2, y2);
+          this.ctx.stroke();
+        }
+
+        // 辅助方法
+        random(min, max) {
+          if (Array.isArray(min))
+            return min[Math.floor(Math.random() * min.length)];
+          if (typeof max === "undefined") {
+            max = min;
+            min = 0;
+          }
+          return Math.random() * (max - min) + min;
+        }
+
+        chance(prob) {
+          return Math.random() < prob;
+        }
+      }
+
+      // =========================================
+      // 3. 业务逻辑: 天气画师 (继承自 TinyP5)
+      // =========================================
+      class WeatherSketch extends TinyP5 {
+        draw(drawType, colors) {
+          const w = this.width;
+          const h = this.height;
+
+          // 1. 背景
+          this.background(colors.bg);
+
+          // 2. 地面
+          const groundY = h - 20;
+          this.fill(colors.line);
+          this.noStroke();
+          this.rect(0, groundY, w, 1);
+
+          // 地面噪点
+          for (let i = 0; i < w; i += 10) {
+            if (this.chance(0.4)) {
+              const nw = this.random(1, 5);
+              this.rect(i, groundY + 2 + this.random(5), nw, 1);
+            }
+          }
+
+          // 3. 天气层
+          this.drawWeatherLayer(drawType, colors, groundY);
+
+          // 4. 植被
+          const numProps = Math.floor(this.random(2, 5));
+          this.fill(colors.line);
+          for (let i = 0; i < numProps; i++) {
+            let px = this.random(w);
+            const ph = this.random(10, 25);
+            const pw = this.random(6, 12);
+            this.rect(px, groundY - ph, pw, ph);
+            // 树叶细节
+            if (this.chance(0.5)) {
+              this.rect(px - 3, groundY - ph + 5, 3, 4);
+              this.rect(px - 3, groundY - ph + 2, 1, 3);
+            }
+          }
+
+          // 5. 生物 (Entities)
+          const types = ["human", "dog", "cat", "chicken", "bird"];
+
+          // 主角 (Hero) - 黄金分割点 0.382
+          this.drawEntity(
+            w * 0.382,
+            groundY,
+            colors.accent,
+            this.random(types)
+          );
+
+          // 路人 (NPCs)
+          const entityCount = Math.floor(this.random(1, 6));
+          for (let i = 1; i < entityCount; i++) {
+            const ex = this.random(20, w - 20);
+            this.drawEntity(ex, groundY, colors.line, this.random(types));
+          }
+
+          // 6. UFO - 概率保持 50%
+          if (this.chance(0.5)) {
+            this.drawUFO(this.random(w), this.random(h * 0.3), colors.line);
+          }
+        }
+
+        drawWeatherLayer(typeStr, colors, groundY) {
+          if (!typeStr) typeStr = "Sun";
+          const t = typeStr.toLowerCase().replace(/\s+/g, "");
+
+          const hasSun = t.includes("sun");
+          const hasCloud = t.includes("cloud") || t.includes("overcast");
+          const hasRain = t.includes("rain") || t.includes("drizzle");
+          const hasSnow =
+            t.includes("snow") || t.includes("snowflake") || t.includes("ice");
+          const hasLightning = t.includes("lightning") || t.includes("thunder");
+          const hasFog = t.includes("fog");
+          const isSmallCloud = t.includes("smallcloud");
+
+          // 绘制顺序：日 -> 云 -> 雨雪 -> 雾 -> 雷
+
+          if (hasSun) {
+            const sunX = this.width - 50;
+            const sunY = 40;
+            this.fill(colors.accent);
+            this.rect(sunX, sunY, 12, 12); // Sun Body
+
+            this.fill(colors.line);
+            const gap = 4;
+            // Rays
+            this.rect(sunX + 5, sunY - 6 - gap, 2, 3);
+            this.rect(sunX + 5, sunY + 15 + gap, 2, 3);
+            this.rect(sunX - 6 - gap, sunY + 5, 3, 2);
+            this.rect(sunX + 15 + gap, sunY + 5, 3, 2);
+            // Diagonals
+            const dGap = 3;
+            this.rect(sunX - 3 - dGap, sunY - 3 - dGap, 2, 2);
+            this.rect(sunX + 13 + dGap, sunY - 3 - dGap, 2, 2);
+            this.rect(sunX - 3 - dGap, sunY + 13 + dGap, 2, 2);
+            this.rect(sunX + 13 + dGap, sunY + 13 + dGap, 2, 2);
+          }
+
+          if (hasCloud) {
+            const count = isSmallCloud ? 3 : 8;
+            this.fill(colors.line);
+            this.alpha(isSmallCloud ? 0.6 : 0.25);
+
+            for (let i = 0; i < count; i++) {
+              let cx = this.random(this.width);
+              let cy = this.random(this.height * 0.4);
+              let cw = this.random(
+                isSmallCloud ? 20 : 40,
+                isSmallCloud ? 50 : 70
+              );
+
+              this.rect(cx, cy, cw, 10);
+              this.rect(cx + 8, cy - 6, cw - 16, 6);
+              this.rect(cx + 4, cy + 4, cw - 12, 4);
+            }
+            this.resetAlpha();
+
+            if (!isSmallCloud) {
+              // Overcast horizon lines
+              this.alpha(0.4);
+              for (let i = 0; i < 10; i++) {
+                this.rect(
+                  this.random(this.width),
+                  this.random(this.height * 0.5),
+                  this.random(20, 80),
+                  2
+                );
+              }
+              this.resetAlpha();
+            }
+          }
+
+          if (hasRain) {
+            this.fill(colors.line);
+            for (let i = 0; i < 50; i++) {
+              this.rect(
+                this.random(this.width),
+                this.random(this.height),
+                1,
+                5
+              );
+            }
+          }
+
+          if (hasSnow) {
+            const isDark =
+              document.documentElement.getAttribute("data-theme") === "dark" ||
+              colors.bg.includes("#202") ||
+              colors.bg.includes("#111");
+            this.fill(isDark ? "#fff" : "#ccc");
+            for (let i = 0; i < 60; i++) {
+              this.rect(
+                this.random(this.width),
+                this.random(this.height),
+                2,
+                2
+              );
+            }
+          }
+
+          if (hasFog) {
+            this.fill(colors.line);
+            this.alpha(0.15);
+            for (let x = 0; x < this.width; x += 3) {
+              if (this.chance(0.5)) this.rect(x, 0, 1, this.height);
+            }
+            this.resetAlpha();
+          }
+
+          if (hasLightning) {
+            this.stroke(colors.accent);
+            this.strokeWeight(2);
+            this.ctx.beginPath();
+            let lx = this.random(this.width);
+            let ly = 10;
+            this.ctx.moveTo(lx, ly);
+            while (ly < this.height - 30) {
+              lx += this.random(-20, 20);
+              ly += this.random(15, 25);
+              this.ctx.lineTo(lx, ly);
+            }
+            this.ctx.stroke();
+            this.noStroke(); // reset
+          }
+        }
+
+        drawEntity(x, y, color, type) {
+          const size = 3;
+          this.fill(color);
+          this.stroke(color);
+          this.strokeWeight(size);
+          this.ctx.lineCap = "round";
+          this.ctx.lineJoin = "round";
+
+          // Pixel block helper
+          const b = (dx, dy, w, h) =>
+            this.ctx.fillRect(x + dx * size, y - dy * size, w * size, h * size);
+
+          if (type === "human") {
+            const dir = this.chance(0.5) ? 1 : -1;
+
+            // 1. Root: Hip
+            const legLen = 7;
+            const hipX = x + 2.5 * size; // Centered
+            const hipY = y - legLen * size;
+
+            // 2. Body Vector (Hip -> Neck)
+            const bodyLen = 7; // Torso length
+            // bodyAngle: 0 = Right, -PI/2 = Up, PI/2 = Down
+            // Random slight lean (-0.2 to 0.2 rads from vertical)
+            const bodyAngle = -Math.PI / 2 + this.random(-0.2, 0.2);
+
+            const neckX = hipX + Math.cos(bodyAngle) * bodyLen * size;
+            const neckY = hipY + Math.sin(bodyAngle) * bodyLen * size;
+
+            // Draw Body
+            this.line(hipX, hipY, neckX, neckY);
+
+            // 3. Head (Attached to Neck)
+            const headDist = 1.5 * size; // Neck to Head center
+            const headX = neckX + Math.cos(bodyAngle) * headDist;
+            const headY = neckY + Math.sin(bodyAngle) * headDist;
+
+            this.ctx.beginPath();
+            this.ctx.arc(headX, headY, 1.5 * size, 0, Math.PI * 2);
+            this.ctx.fill();
+
+            // --- Helper for polar limbs (angle in radians, 0 is Down) ---
+            // Note: Now we base limbs off Hip and Neck coordinates calculated above
+            const drawLimbPolar = (
+              startX,
+              startY,
+              angle1,
+              len1,
+              angle2,
+              len2
+            ) => {
+              // Convert abstract angle (0=Down) to Canvas (0=Right) -> +PI/2
+              const a1 = angle1 + Math.PI / 2;
+              const x2 = startX + Math.cos(a1) * len1 * size;
+              const y2 = startY + Math.sin(a1) * len1 * size;
+
+              const a2 = angle2 + Math.PI / 2;
+              const x3 = x2 + Math.cos(a2) * len2 * size;
+              const y3 = y2 + Math.sin(a2) * len2 * size;
+
+              this.ctx.beginPath();
+              this.ctx.moveTo(startX, startY);
+              this.ctx.lineTo(x2, y2);
+              this.ctx.lineTo(x3, y3);
+              this.ctx.stroke();
+            };
+
+            // --- Config ---
+            const armL1 = 2.8;
+            const armL2 = 2.5;
+            const legL1 = 3.8;
+            const legL2 = 3.8;
+
+            // --- Legs (Attached to Hip) ---
+            const leg1A1 = this.random(-0.5, 0.5);
+            const leg1A2 = leg1A1 - dir * this.random(0.1, 1.2);
+            drawLimbPolar(hipX, hipY, leg1A1, legL1, leg1A2, legL2);
+
+            const leg2A1 = this.random(-0.5, 0.5);
+            const leg2A2 = leg2A1 - dir * this.random(0.1, 1.2);
+            drawLimbPolar(hipX, hipY, leg2A1, legL1, leg2A2, legL2);
+
+            // --- Arms (Attached to Neck/Shoulder) ---
+            const skyArmIndex = this.chance(0.5) ? 0 : 1;
+
+            // Arm 1
+            if (skyArmIndex === 0) {
+              const a1 = -Math.PI + this.random(-0.6, 0.6);
+              const a2 = a1 + this.random(-0.4, 0.4);
+              drawLimbPolar(neckX, neckY, a1, armL1, a2, armL2);
+            } else {
+              const a1 = this.random(-2, 2);
+              const a2 = a1 + this.random(-1, 1);
+              drawLimbPolar(neckX, neckY, a1, armL1, a2, armL2);
+            }
+
+            // Arm 2
+            if (skyArmIndex === 1) {
+              const a1 = -Math.PI + this.random(-0.6, 0.6);
+              const a2 = a1 + this.random(-0.4, 0.4);
+              drawLimbPolar(neckX, neckY, a1, armL1, a2, armL2);
+            } else {
+              const a1 = this.random(-2, 2);
+              const a2 = a1 + this.random(-1, 1);
+              drawLimbPolar(neckX, neckY, a1, armL1, a2, armL2);
+            }
+          } else if (type === "dog") {
+            b(0, 6, 3, 3);
+            b(0, 8, 1, 2);
+            b(2, 6, 6, 3);
+            b(7, 7, 1, 2);
+            b(2, 3, 1, 3);
+            b(6, 3, 1, 3);
+          } else if (type === "cat") {
+            b(0, 6, 3, 3);
+            b(0, 8, 1, 2);
+            b(2, 8, 1, 2);
+            b(2, 5, 5, 3);
+            b(6, 6, 1, 4);
+            b(2, 2, 1, 2);
+            b(5, 2, 1, 2);
+          } else if (type === "chicken") {
+            b(0, 4, 2, 2);
+            b(1, 4, 1, 1);
+            b(0, 3, 3, 2);
+            b(1, 1, 1, 1);
+          } else if (type === "bird") {
+            // Fly higher (Middle of screen)
+            const flyY = this.random(this.height * 0.4, this.height * 0.6);
+            this.ctx.fillRect(x, flyY, 4 * size, size);
+            this.ctx.fillRect(x + size, flyY - size, size, 3 * size);
+          }
+        }
+
+        drawUFO(x, y, color) {
+          this.fill(color);
+          const size = 3;
+          const b = (dx, dy, w, h) =>
+            this.ctx.fillRect(x + dx * size, y + dy * size, w * size, h * size);
+          b(2, 0, 4, 2);
+          b(0, 2, 8, 2);
+          // Lights (Clear)
+          this.ctx.clearRect(x + size, y + 3 * size, size, size / 2);
+          this.ctx.clearRect(x + 3 * size, y + 3 * size, size, size / 2);
+          this.ctx.clearRect(x + 6 * size, y + 3 * size, size, size / 2);
+        }
+      }
+
+      // =========================================
+      // 4. 组件定义 (Web Component)
+      // =========================================
+      class WeatherCard extends HTMLElement {
+        connectedCallback() {
+          this.weatherKey = this.getAttribute("data-weather");
+          this.drawType = this.getAttribute("data-draw");
+          this.render();
+          this.initCanvas();
+        }
+
+        render() {
+          const typeObj = weatherTypes.find(
+            (t) => t.key === this.weatherKey
+          ) || { name: "未知" };
+          const label = `${typeObj.name} ${this.weatherKey}`;
+
+          this.innerHTML = `
+          <figure class="post-hero">
+            <canvas class="post-canvas"></canvas>
+            <figcaption class="post-weather" title="${label}">
+              ${label}
+            </figcaption>
+          </figure>
+          <div class="card-footer">
+            <span>${this.drawType}</span>
+            <span>Seed: ${Math.floor(Math.random() * 100)}</span>
+          </div>
+        `;
+        }
+
+        initCanvas() {
+          const canvas = this.querySelector("canvas");
+          const container = canvas.parentElement;
+
+          // 实例化我们的微型 p5 风格画笔
+          this.sketch = new WeatherSketch(canvas);
+
+          const observer = new ResizeObserver(() => this.paint(container));
+          observer.observe(container);
+
+          requestAnimationFrame(() => this.paint(container));
+        }
+
+        paint(container) {
+          if (!container || container.offsetWidth === 0) return;
+
+          // 获取 CSS 变量
+          const getCSS = (n) =>
+            getComputedStyle(document.documentElement)
+              .getPropertyValue(n)
+              .trim();
+          const colors = {
+            bg: getCSS("--canvas-bg"),
+            line: getCSS("--canvas-line"),
+            accent: getCSS("--canvas-accent")
+          };
+
+          const rect = container.getBoundingClientRect();
+
+          // 使用 Sketch 方法调整大小并绘制
+          this.sketch.resize(
+            rect.width,
+            rect.height,
+            window.devicePixelRatio || 1
+          );
+          this.sketch.draw(this.drawType, colors);
+        }
+      }
+
+      customElements.define("article-weather", WeatherCard);
+
+      // =========================================
+      // 5. 初始化
+      // =========================================
+      const grid = document.getElementById("grid");
+      const themeBtn = document.getElementById("themeBtn");
+
+      weatherTypes.forEach((type) => {
+        const el = document.createElement("article-weather");
+        el.setAttribute("data-weather", type.key);
+        el.setAttribute("data-draw", type.draw);
+        grid.appendChild(el);
+      });
+
+      themeBtn.addEventListener("click", () => {
+        const isDark =
+          document.documentElement.getAttribute("data-theme") === "dark";
+        document.documentElement.setAttribute(
+          "data-theme",
+          !isDark ? "dark" : "light"
+        );
+        themeBtn.textContent = !isDark ? "切换亮色模式" : "切换深色模式";
+
+        // 触发重绘
+        document.querySelectorAll("article-weather").forEach((card) => {
+          card.paint(card.querySelector(".post-hero"));
+        });
+      });
+    </script>
+  </body>
+</html>

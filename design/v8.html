@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KALIBER 10000: The Designer's Portal</title>
+    <style>
+      /* --- 0. RESET & BASE --- */
+      :root {
+        --bg-color: #6a7680; /* Sophisticated muted blue-grey */
+        --border-color: #555;
+        --grid-line: #999; /* The separator color */
+        --cell-bg: #fff;
+        --cell-bg-alt: #f1f3f5;
+        --highlight: #ffcc00; /* Classic Pixel Yellow */
+        --highlight-text: #000;
+        --text-main: #333;
+        --text-muted: #888;
+        --link-color: #4a5a6a;
+        --link-hover: #ff3300; /* A subversive red/orange */
+        --font-stack: "Verdana", "Geneva", sans-serif;
+        --font-mono: "Courier New", monospace;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background-color: var(--bg-color);
+        /* Tiny dot pattern for texture */
+        background-image: radial-gradient(#5a6670 1px, transparent 1px);
+        background-size: 4px 4px;
+        font-family: var(--font-stack);
+        font-size: 10px; /* The golden standard for pixel sites */
+        color: var(--text-main);
+        line-height: 1.4;
+        padding: 20px 0;
+        -webkit-font-smoothing: none; /* Try to make fonts crisp */
+      }
+
+      /* --- 1. UTILITIES & ICONS --- */
+      .pixel-icon {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        background-color: #ccc;
+        margin-right: 4px;
+        vertical-align: middle;
+        image-rendering: pixelated;
+      }
+
+      /* CSS-drawn Pixel Icons */
+      .icon-arrow-r {
+        width: 0;
+        height: 0;
+        border-top: 3px solid transparent;
+        border-bottom: 3px solid transparent;
+        border-left: 3px solid var(--highlight-text);
+        background: none;
+      }
+      .icon-square {
+        width: 5px;
+        height: 5px;
+        background: var(--link-color);
+      }
+      .icon-grid {
+        background:
+          linear-gradient(#000 1px, transparent 1px),
+          linear-gradient(90deg, #000 1px, transparent 1px);
+        background-size: 2px 2px;
+        width: 8px;
+        height: 8px;
+        opacity: 0.5;
+      }
+
+      .text-mono {
+        font-family: var(--font-mono);
+        font-size: 9px;
+      }
+      .upper {
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .bold {
+        font-weight: bold;
+      }
+      .block {
+        display: block;
+      }
+      .flex {
+        display: flex;
+      }
+      .j-between {
+        justify-content: space-between;
+      }
+      .a-center {
+        align-items: center;
+      }
+
+      a {
+        text-decoration: none;
+        color: var(--link-color);
+        transition: none;
+      }
+      a:hover {
+        color: var(--link-hover);
+        background: #fff;
+      }
+
+      /* Specific link style for menus */
+      .menu-link {
+        display: block;
+        padding: 3px 6px;
+        border-bottom: 1px dotted #ddd;
+      }
+      .menu-link:hover {
+        background-color: var(--highlight);
+        color: var(--highlight-text);
+        border-bottom-style: solid;
+        border-bottom-color: #000;
+      }
+
+      /* --- 2. MAIN LAYOUT (The "Grid") --- */
+      .container {
+        width: 920px; /* Fixed width, very 2000s */
+        margin: 0 auto;
+        background-color: var(--grid-line); /* This creates the borders */
+        border: 1px solid #000;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+
+        /* The Core Layout Strategy: CSS Grid acting as Table */
+        display: grid;
+        grid-template-columns: 140px 1fr 180px; /* Left Sidebar | Main | Right Sidebar */
+        gap: 1px; /* 1px gap reveals the background color, creating perfect grid lines */
+      }
+
+      /* Generic Cell Style */
+      .cell {
+        background-color: var(--cell-bg);
+        padding: 0;
+        overflow: hidden;
+      }
+      .cell-pad {
+        padding: 10px;
+      }
+      .cell-alt {
+        background-color: var(--cell-bg-alt);
+      }
+      .cell-header {
+        background: #ddd;
+        background-image: linear-gradient(to bottom, #fff, #ddd);
+        padding: 3px 6px;
+        font-size: 9px;
+        font-weight: bold;
+        color: #555;
+        text-shadow: 1px 1px 0 #fff;
+        text-transform: uppercase;
+        border-bottom: 1px solid #ccc;
+      }
+
+      /* Header spans all columns */
+      .header-row {
+        grid-column: 1 / -1;
+        background-color: #fff;
+        height: 90px;
+        position: relative;
+        background-image:
+          linear-gradient(90deg, transparent 98%, #eee 98%),
+          linear-gradient(transparent 98%, #eee 98%);
+        background-size: 10px 10px;
+      }
+
+      /* Footer spans all columns */
+      .footer-row {
+        grid-column: 1 / -1;
+        background-color: #333;
+        color: #999;
+        padding: 10px;
+        border-top: 1px solid #000;
+        font-family: var(--font-mono);
+        font-size: 9px;
+        text-align: center;
+      }
+
+      /* --- 3. COMPONENT STYLES --- */
+
+      /* Header Specifics */
+      .site-area {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+      }
+      .k10k-logo {
+        font-family: Impact, sans-serif;
+        font-size: 36px;
+        line-height: 1;
+        color: #000;
+        letter-spacing: -1px;
+      }
+      .k10k-sub {
+        font-size: 9px;
+        background: var(--highlight);
+        color: #000;
+        padding: 1px 3px;
+        margin-left: 2px;
+        font-family: var(--font-mono);
+      }
+
+      /* Top Micro Nav */
+      .micro-nav {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        display: flex;
+        gap: 1px;
+        background: #999;
+        padding: 1px;
+      }
+      .micro-btn {
+        background: #fff;
+        border: none;
+        font-size: 9px;
+        padding: 2px 5px;
+        cursor: pointer;
+        font-family: var(--font-stack);
+        color: #666;
+      }
+      .micro-btn:hover {
+        background: var(--highlight);
+        color: #000;
+      }
+      .micro-btn.active {
+        background: #333;
+        color: #fff;
+      }
+
+      /* Left Sidebar Modules */
+      .nav-group {
+        margin-bottom: 0;
+      }
+
+      /* Main Content Feed */
+      .post-item {
+        display: flex;
+        border-bottom: 1px solid #eee;
+      }
+      .post-item:last-child {
+        border-bottom: none;
+      }
+
+      .post-visual {
+        width: 100px;
+        height: 70px;
+        flex-shrink: 0;
+        border-right: 1px solid #eee;
+        position: relative;
+      }
+      .post-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: grayscale(100%);
+        transition: filter 0.2s;
+      }
+      .post-item:hover .post-img {
+        filter: grayscale(0%);
+      }
+
+      .post-content {
+        padding: 8px;
+        flex: 1;
+      }
+
+      .post-meta {
+        font-size: 9px;
+        color: #999;
+        margin-bottom: 2px;
+        font-family: var(--font-mono);
+        display: flex;
+        justify-content: space-between;
+      }
+      .post-title {
+        font-weight: bold;
+        font-size: 11px;
+        color: #222;
+        margin-bottom: 3px;
+      }
+      .post-item:hover .post-title {
+        color: var(--link-hover);
+      }
+      .post-excerpt {
+        color: #666;
+        font-size: 10px;
+        line-height: 1.3;
+      }
+
+      /* Right Sidebar "Subversive" Elements */
+      .ad-block {
+        height: 60px;
+        background: #eee;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-bottom: 1px solid #ccc;
+        font-size: 9px;
+        color: #aaa;
+        position: relative;
+        overflow: hidden;
+      }
+      .ad-scan {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 2px,
+          rgba(0, 0, 0, 0.03) 2px,
+          rgba(0, 0, 0, 0.03) 4px
+        );
+      }
+
+      .shoutbox {
+        font-family: var(--font-mono);
+        padding: 5px;
+      }
+      .shout-row {
+        margin-bottom: 4px;
+        border-bottom: 1px dotted #e0e0e0;
+        padding-bottom: 2px;
+      }
+      .shout-user {
+        font-weight: bold;
+        color: #444;
+      }
+      .shout-msg {
+        color: #666;
+      }
+
+      /* The "Pixel Push" Button */
+      .btn-pixel {
+        display: block;
+        width: 100%;
+        background: #fff;
+        border: 1px solid #ccc;
+        padding: 4px;
+        text-align: center;
+        font-size: 9px;
+        color: #555;
+        cursor: pointer;
+        margin-top: 5px;
+      }
+      .btn-pixel:hover {
+        border-color: #000;
+        background: var(--highlight);
+        color: #000;
+        box-shadow: 1px 1px 0 #000;
+        transform: translate(-1px, -1px);
+      }
+
+      /* --- 4. RESPONSIVE --- */
+      @media (max-width: 800px) {
+        .container {
+          width: 100%;
+          grid-template-columns: 1fr;
+          border: none;
+          box-shadow: none;
+        }
+        .header-row {
+          height: 70px;
+        }
+        /* Hide sidebars on mobile for simplicity in this demo */
+        .sidebar-l,
+        .sidebar-r {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- HEADER (Span 3 columns) -->
+      <header class="header-row">
+        <div class="logo-area">
+          <div class="k10k-logo">
+            KALIBER<span style="color: #666">10000</span>
+          </div>
+          <div class="k10k-sub">// THE_DESIGNERS_NETWORK_PORTAL_V4</div>
+        </div>
+
+        <div class="micro-nav">
+          <button class="micro-btn active">NEWS</button>
+          <button class="micro-btn">ISSUES</button>
+          <button class="micro-btn">LINKS</button>
+          <button class="micro-btn">Pixel_Push</button>
+          <button class="micro-btn">SHOP</button>
+          <button class="micro-btn">LOGIN</button>
+        </div>
+
+        <!-- Decorative Pixel Grid -->
+        <div
+          style="
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            display: grid;
+            grid-template-columns: repeat(4, 4px);
+            gap: 2px;
+          "
+        >
+          <div style="background: #000; height: 4px"></div>
+          <div style="background: #666; height: 4px"></div>
+          <div style="background: #999; height: 4px"></div>
+          <div style="background: #ccc; height: 4px"></div>
+          <div style="background: #ccc; height: 4px"></div>
+          <div style="background: #999; height: 4px"></div>
+          <div style="background: #666; height: 4px"></div>
+          <div style="background: #var(--highlight); height: 4px"></div>
+        </div>
+      </header>
+
+      <!-- LEFT SIDEBAR -->
+      <aside class="cell sidebar-l">
+        <div class="cell-header">:: NAVIGATION</div>
+        <div class="nav-group">
+          <a href="#" class="menu-link"
+            ><span class="icon-square"></span> Latest News</a
+          >
+          <a href="#" class="menu-link"
+            ><span class="icon-square"></span> Featured Issues</a
+          >
+          <a href="#" class="menu-link"
+            ><span class="icon-square"></span> Weekly Pixels</a
+          >
+          <a href="#" class="menu-link"
+            ><span class="icon-square"></span> The Staff</a
+          >
+          <a href="#" class="menu-link"
+            ><span class="icon-square"></span> Submit Link</a
+          >
+        </div>
+
+        <div class="cell-header" style="margin-top: 1px">:: CHANNELS</div>
+        <div class="nav-group">
+          <a href="#" class="menu-link text-mono">/design</a>
+          <a href="#" class="menu-link text-mono">/photography</a>
+          <a href="#" class="menu-link text-mono">/architecture</a>
+          <a href="#" class="menu-link text-mono">/typography</a>
+          <a href="#" class="menu-link text-mono">/music</a>
+        </div>
+
+        <div class="cell-pad cell-alt" style="border-top: 1px solid #ccc">
+          <div
+            class="bold upper"
+            style="font-size: 9px; color: #555; margin-bottom: 5px"
+          >
+            System Status
+          </div>
+          <div
+            class="flex j-between text-mono"
+            style="font-size: 9px; color: #888"
+          >
+            <span>DB Load:</span> <span style="color: green">OK</span>
+          </div>
+          <div
+            class="flex j-between text-mono"
+            style="font-size: 9px; color: #888"
+          >
+            <span>Users:</span> <span>412</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- CENTER MAIN CONTENT -->
+      <main class="cell">
+        <!-- Hero Unit within Main -->
+        <div style="background: #222; color: #fff; padding: 1px">
+          <div
+            style="
+              height: 200px;
+              position: relative;
+              overflow: hidden;
+              background: #000;
+            "
+          >
+            <img
+              src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80"
+              style="width: 100%; height: 100%; object-fit: cover; opacity: 0.8"
+              alt="Hero"
+            />
+            <div
+              style="
+                position: absolute;
+                bottom: 20px;
+                left: 20px;
+                background: rgba(0, 0, 0, 0.7);
+                padding: 10px;
+                border: 1px solid #555;
+                border-left: 4px solid var(--highlight);
+              "
+            >
+              <h2 style="font-size: 14px; margin-bottom: 4px">
+                FEATURE: THE RETURN OF LOW-RES
+              </h2>
+              <p style="font-size: 10px; color: #ccc">
+                Why 72dpi is making a comeback in modern web art.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div
+          class="flex j-between a-center cell-alt"
+          style="padding: 5px 10px; border-bottom: 1px solid #ccc"
+        >
+          <div class="text-mono" style="font-size: 9px; color: #666">
+            DISPLAYING 1-5 OF 8421 ENTRIES
+          </div>
+          <div class="flex gap-1">
+            <button class="micro-btn">PREV</button>
+            <button class="micro-btn">NEXT</button>
+          </div>
+        </div>
+
+        <!-- Content Stream -->
+        <div id="content-stream">
+          <!-- JS Populated Items -->
+        </div>
+      </main>
+
+      <!-- RIGHT SIDEBAR -->
+      <aside class="cell sidebar-r">
+        <div class="cell-header">:: SPONSORS</div>
+        <div class="ad-block">
+          <span style="position: relative; z-index: 2"
+            >[ 120x60 AD_SPACE ]</span
+          >
+          <div class="ad-scan"></div>
+        </div>
+        <div class="ad-block">
+          <span style="position: relative; z-index: 2"
+            >[ PIXEL_FONTS_PRO ]</span
+          >
+          <div class="ad-scan"></div>
+        </div>
+
+        <div class="cell-header" style="margin-top: 1px">:: SHOUTBOX</div>
+        <div class="cell-pad shoutbox" style="height: 200px; overflow-y: auto">
+          <div class="shout-row">
+            <span class="shout-user">Toke:</span>
+            <span class="shout-msg">New server up!</span>
+          </div>
+          <div class="shout-row">
+            <span class="shout-user">DesignBot:</span>
+            <span class="shout-msg">Links updated.</span>
+          </div>
+          <div class="shout-row">
+            <span class="shout-user">Guest88:</span>
+            <span class="shout-msg">Where is the flash intro?</span>
+          </div>
+          <div class="shout-row">
+            <span class="shout-user">Admin:</span>
+            <span class="shout-msg">Flash is dead. Long live HTML.</span>
+          </div>
+        </div>
+        <div class="cell-pad cell-alt" style="border-top: 1px solid #ccc">
+          <input
+            type="text"
+            placeholder="SAY SOMETHING..."
+            style="
+              width: 100%;
+              border: 1px solid #ccc;
+              padding: 2px;
+              font-size: 9px;
+              font-family: var(--font-mono);
+            "
+          />
+          <button class="btn-pixel">SHOUT!</button>
+        </div>
+      </aside>
+
+      <!-- FOOTER (Span 3 columns) -->
+      <footer class="footer-row">
+        <div style="margin-bottom: 10px">
+          <a href="#" style="margin: 0 5px">ABOUT</a> .
+          <a href="#" style="margin: 0 5px">ADVERTISE</a> .
+          <a href="#" style="margin: 0 5px">STAFF</a> .
+          <a href="#" style="margin: 0 5px">LEGAL</a>
+        </div>
+        <div style="color: #666">
+          (C) COPYRIGHT 1998-2025 KALIBER10000.NET. ALL RIGHTS RESERVED.<br />
+          HAND-CODED WITH LOVE AND PIXELS IN COPENHAGEN & NEW YORK.
+        </div>
+      </footer>
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+      const posts = [
+        {
+          title: "Geometric Chaos in CSS",
+          date: "24 OCT | 14:02",
+          author: "MICHAEL",
+          cat: "CODE",
+          img: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=150&q=80",
+          excerpt:
+            "Breaking the grid with CSS transforms while maintaining readability. A new study."
+        },
+        {
+          title: "The Typography of Terminals",
+          date: "24 OCT | 10:15",
+          author: "TOKE",
+          cat: "TYPE",
+          img: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=150&q=80",
+          excerpt:
+            "Why monospaced fonts are experiencing a renaissance in high-end editorial design."
+        },
+        {
+          title: "Analog Photography textures",
+          date: "23 OCT | 22:45",
+          author: "GUEST",
+          cat: "RESOURCE",
+          img: "https://images.unsplash.com/photo-1500462918059-b1a0cb512f1d?auto=format&fit=crop&w=150&q=80",
+          excerpt:
+            "Free pack of 50 high-res film grain scans for your next project."
+        },
+        {
+          title: "Industrial Design: Dieter Rams",
+          date: "23 OCT | 09:30",
+          author: "ADMIN",
+          cat: "INSPIRATION",
+          img: "https://images.unsplash.com/photo-1512418490979-92798cec1380?auto=format&fit=crop&w=150&q=80",
+          excerpt:
+            "Looking back at the 10 principles of good design. Is less still better?"
+        },
+        {
+          title: "SVG vs Canvas: The Battle",
+          date: "22 OCT | 16:20",
+          author: "CODER_X",
+          cat: "TECH",
+          img: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=150&q=80",
+          excerpt:
+            "Performance benchmarks for large scale animations in 2025 browsers."
+        }
+      ];
+
+      const stream = document.getElementById("content-stream");
+
+      posts.forEach((post) => {
+        const item = document.createElement("div");
+        item.className = "post-item";
+        item.innerHTML = `
+            <div class="post-visual">
+                <img src="${post.img}" class="post-img" alt="thumb">
+                <div style="position:absolute; top:0; left:0; padding:1px 3px; background:#000; color:#fff; font-size:8px; font-family:var(--font-mono);">${post.cat}</div>
+            </div>
+            <div class="post-content">
+                <div class="post-meta">
+                    <span>// ${post.date}</span>
+                    <span>BY ${post.author}</span>
+                </div>
+                <div class="post-title">${post.title}</div>
+                <div class="post-excerpt">${post.excerpt}</div>
+                <div style="margin-top: 5px; font-size: 9px;">
+                    <a href="#" style="color: #999;">[ READ MORE ]</a>
+                    <a href="#" style="color: #999; margin-left:5px;">[ COMMENTS (4) ]</a>
+                </div>
+            </div>
+        `;
+        stream.appendChild(item);
+      });
+    </script>
+  </body>
+</html>

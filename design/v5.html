@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ONMODULAR [2002]</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* 自定义字体与基础样式 */
+    :root {
+      --bg-color: #ffffff;
+      --text-color: #000000;
+      --border-color: #000000;
+      --accent-color: #0000ff; /* 经典的链接蓝 */
+    }
+
+    body {
+      font-family: 'Courier New', Courier, monospace; /* 2002年风格的核心 */
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      line-height: 1.4;
+      overflow-x: hidden;
+    }
+
+    /* 模块化边框系统 */
+    .modular-grid {
+      display: grid;
+      grid-template-columns: 240px 1fr 280px;
+      width: 100%;
+      max-width: 1440px;
+      margin: 0 auto;
+      border-left: 1px solid var(--border-color);
+      border-right: 1px solid var(--border-color);
+      min-height: 100vh;
+    }
+
+    .module-border-bottom {
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .module-border-right {
+      border-right: 1px solid var(--border-color);
+    }
+
+    /* 交互效果 */
+    .hover-invert {
+      transition: all 0s; /* 那个年代通常没有平滑过渡 */
+    }
+    .hover-invert:hover {
+      background-color: var(--text-color);
+      color: var(--bg-color);
+      cursor: pointer;
+    }
+
+    a:hover {
+      background-color: var(--accent-color);
+      color: white;
+      text-decoration: none;
+    }
+
+    /* 跑马灯效果 */
+    .marquee-container {
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    .marquee-content {
+      display: inline-block;
+      animation: marquee 20s linear infinite;
+    }
+    @keyframes marquee {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 1024px) {
+      .modular-grid {
+        grid-template-columns: 200px 1fr;
+      }
+      .sidebar-right {
+        display: none; /* 平板模式隐藏右侧栏 */
+      }
+    }
+
+    @media (max-width: 768px) {
+      .modular-grid {
+        grid-template-columns: 1fr;
+        border-left: none;
+        border-right: none;
+      }
+      .sidebar-left, .main-content, .sidebar-right {
+        border-right: none;
+      }
+      .sidebar-right {
+        display: block; /* 手机模式重新显示在底部 */
+      }
+      /* 手机端头部调整 */
+      .mobile-header-stack {
+        flex-direction: column;
+      }
+      .mobile-border-top {
+        border-top: 1px solid var(--border-color);
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 顶部导航模块 -->
+<header class="border-b border-black w-full max-w-[1440px] mx-auto border-x border-black md:border-x">
+  <div class="flex justify-between items-stretch mobile-header-stack">
+    <div class="p-4 font-bold text-2xl border-r border-black flex items-center bg-black text-white w-full md:w-auto">
+      ONMODULAR_2002
+    </div>
+    <div class="flex-grow flex flex-col justify-center border-r border-black relative overflow-hidden h-12 md:h-auto mobile-border-top">
+      <div class="marquee-container p-2 text-sm uppercase">
+        <div class="marquee-content">
+          +++ SYSTEM ONLINE +++ WELCOME TO THE ARCHIVE +++ LAST UPDATE: 2002-10-24 +++ DESIGN IS INTELLIGENCE MADE VISIBLE +++
+        </div>
+      </div>
+    </div>
+    <div class="p-4 font-mono text-sm flex items-center justify-center min-w-[150px] mobile-border-top hover-invert" id="clock">
+      00:00:00
+    </div>
+  </div>
+</header>
+
+<!-- 主体网格布局 -->
+<div class="modular-grid">
+
+  <!-- 左侧边栏：导航与信息 -->
+  <aside class="sidebar-left module-border-right bg-gray-50">
+    <div class="module-border-bottom p-4">
+      <h3 class="font-bold mb-2 uppercase">[Menu]</h3>
+      <nav class="flex flex-col space-y-2 text-sm">
+        <a href="#" class="block p-1 border border-transparent hover:border-black">:: HOME</a>
+        <a href="#" class="block p-1 border border-transparent hover:border-black">:: ARCHIVES</a>
+        <a href="#" class="block p-1 border border-transparent hover:border-black">:: PROJECTS</a>
+        <a href="#" class="block p-1 border border-transparent hover:border-black">:: ABOUT_ME.txt</a>
+        <a href="#" class="block p-1 border border-transparent hover:border-black">:: RSS_FEED</a>
+      </nav>
+    </div>
+
+    <div class="module-border-bottom p-4">
+      <h3 class="font-bold mb-2 uppercase">[Status]</h3>
+      <div class="text-xs space-y-1">
+        <div class="flex justify-between"><span>UPTIME:</span> <span>99.9%</span></div>
+        <div class="flex justify-between"><span>MOOD:</span> <span>CALM</span></div>
+        <div class="flex justify-between"><span>MUSIC:</span> <span>AUTECHRE</span></div>
+        <div class="mt-4 border border-black h-4 w-full relative">
+          <div class="bg-black h-full" style="width: 75%"></div>
+        </div>
+        <div class="text-right">LOADING...</div>
+      </div>
+    </div>
+
+    <div class="p-4 sticky top-0">
+      <h3 class="font-bold mb-2 uppercase">[Search]</h3>
+      <input type="text" placeholder="QUERY..." class="w-full bg-transparent border border-black p-2 text-sm focus:bg-black focus:text-white outline-none placeholder-gray-500">
+      <button class="w-full mt-2 border border-black bg-white hover:bg-black hover:text-white p-1 text-sm uppercase transition-colors">
+        Execute
+      </button>
+    </div>
+  </aside>
+
+  <!-- 中间：主要内容流 -->
+  <main class="main-content module-border-right bg-white">
+
+    <!-- 置顶文章 -->
+    <article class="module-border-bottom p-6 md:p-10 hover:bg-gray-50 transition-colors">
+      <div class="text-xs font-bold mb-2 border inline-block px-1 border-black">#FEATURED</div>
+      <h1 class="text-3xl md:text-5xl font-bold mb-4 uppercase leading-tight">
+        The Aesthetics of<br>Raw Data
+      </h1>
+      <div class="flex items-center text-xs mb-6 space-x-4 border-b border-black pb-2">
+        <span>DATE: 2002.10.24</span>
+        <span>AUTHOR: ADMIN</span>
+        <span>SIZE: 4KB</span>
+      </div>
+      <div class="prose prose-sm max-w-none font-mono">
+        <p class="mb-4">
+          We are entering an era where structure dictates function. The decorative elements of the late 90s web are fading.
+          What remains is the grid. Pure, unadulterated information architecture.
+        </p>
+        <p class="mb-4">
+          In this paradigm, the border is not just a separator; it is a statement of containment.
+          Modular design allows us to treat content as interchangeable blocks of logic.
+        </p>
+      </div>
+      <div class="mt-6">
+        <a href="#" class="inline-block border border-black px-6 py-2 hover:bg-black hover:text-white uppercase text-sm">
+          [ Read_Full_Entry ]
+        </a>
+      </div>
+    </article>
+
+    <!-- 文章列表 -->
+    <article class="module-border-bottom p-6 flex flex-col md:flex-row gap-6 group hover:bg-blue-50">
+      <div class="md:w-32 flex-shrink-0">
+        <div class="w-full h-32 border border-black bg-gray-200 flex items-center justify-center text-xs overflow-hidden group-hover:invert transition-all">
+          <img src="/api/placeholder/128/128" alt="Glitch Art" class="w-full h-full object-cover opacity-50 grayscale" onerror="this.style.display='none';this.parentElement.innerHTML='IMG_ERR'"/>
+        </div>
+      </div>
+      <div class="flex-grow">
+        <h2 class="text-xl font-bold mb-2 group-hover:text-blue-700">PROJECT: NEON_CITY</h2>
+        <p class="text-sm mb-3 line-clamp-2">
+          Exploration of vertical typography in limited screen real estate.
+          The challenge was to maintain readability while breaking standard conventions.
+        </p>
+        <a href="#" class="text-xs border-b border-black hover:bg-black hover:text-white pb-0.5">>> ACCESS_FILE</a>
+      </div>
+    </article>
+
+    <article class="module-border-bottom p-6 flex flex-col md:flex-row gap-6 group hover:bg-blue-50">
+      <div class="md:w-32 flex-shrink-0">
+        <div class="w-full h-32 border border-black bg-gray-200 flex items-center justify-center text-xs text-center p-2 group-hover:invert transition-all">
+          NO_IMAGE
+        </div>
+      </div>
+      <div class="flex-grow">
+        <h2 class="text-xl font-bold mb-2 group-hover:text-blue-700">THOUGHTS ON CSS2</h2>
+        <p class="text-sm mb-3 line-clamp-2">
+          The new specifications are promising but browser support remains fragmented.
+          Is it safe to use absolute positioning for layout yet?
+        </p>
+        <a href="#" class="text-xs border-b border-black hover:bg-black hover:text-white pb-0.5">>> ACCESS_FILE</a>
+      </div>
+    </article>
+
+    <!-- 分页 -->
+    <div class="p-6 flex justify-between items-center text-sm">
+      <a href="#" class="border border-black px-4 py-1 hover:bg-black hover:text-white opacity-50 cursor-not-allowed">< PREV</a>
+      <span>PAGE 1 / 42</span>
+      <a href="#" class="border border-black px-4 py-1 hover:bg-black hover:text-white">NEXT ></a>
+    </div>
+
+  </main>
+
+  <!-- 右侧边栏：链接与额外信息 -->
+  <aside class="sidebar-right bg-gray-50">
+    <div class="module-border-bottom p-4">
+      <h3 class="font-bold mb-2 uppercase border-b border-black pb-1">[Link_Roll]</h3>
+      <ul class="text-xs space-y-2 list-none">
+        <li><a href="#" class="hover:underline">→ K10k.net</a></li>
+        <li><a href="#" class="hover:underline">→ DesignIsKinky</a></li>
+        <li><a href="#" class="hover:underline">→ Joshua Davis</a></li>
+        <li><a href="#" class="hover:underline">→ PrayStation</a></li>
+        <li><a href="#" class="hover:underline">→ Css_Zen_Garden</a></li>
+      </ul>
+    </div>
+
+    <div class="module-border-bottom p-4">
+      <h3 class="font-bold mb-2 uppercase border-b border-black pb-1">[Calendar]</h3>
+      <div class="grid grid-cols-7 gap-1 text-center text-xs font-mono mt-2">
+        <div class="text-gray-400">S</div><div class="text-gray-400">M</div><div class="text-gray-400">T</div><div class="text-gray-400">W</div><div class="text-gray-400">T</div><div class="text-gray-400">F</div><div class="text-gray-400">S</div>
+        <!-- Mock Calendar Days -->
+        <div class="opacity-30">29</div><div class="opacity-30">30</div>
+        <div>01</div><div>02</div><div>03</div><div>04</div><div>05</div>
+        <div>06</div><div>07</div><div>08</div><div>09</div><div>10</div><div>11</div><div>12</div>
+        <div>13</div><div>14</div><div>15</div><div>16</div><div>17</div><div>18</div><div>19</div>
+        <div>20</div><div>21</div><div>22</div><div>23</div><div class="bg-black text-white">24</div><div>25</div><div>26</div>
+        <div>27</div><div>28</div><div>29</div><div>30</div><div>31</div>
+      </div>
+    </div>
+
+    <div class="p-4">
+      <div class="border border-black p-2 text-center hover-invert">
+        <div class="text-4xl font-bold mb-1">RSS</div>
+        <div class="text-[10px]">SUBSCRIBE TO FEED</div>
+      </div>
+
+      <div class="mt-8 text-[10px] text-gray-500 text-center">
+        <p>COPYRIGHT © 2002</p>
+        <p>ONMODULAR SYSTEMS</p>
+        <p>ALL RIGHTS RESERVED.</p>
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<!-- 底部页脚 -->
+<footer class="border-t border-black w-full max-w-[1440px] mx-auto border-x border-black p-4 text-center text-xs uppercase bg-black text-white">
+  :: END OF STREAM :: DESIGNED FOR IE6 & NETSCAPE ::
+</footer>
+
+<script>
+  // 更新时钟
+  function updateClock() {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString('en-US', {
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+    document.getElementById('clock').textContent = timeString;
+  }
+
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  // 简单的控制台彩蛋
+  console.log("%c SYSTEM READY ", "background: #000; color: #fff; font-size: 12px; padding: 4px;");
+  console.log("Welcome to OnModular 2002 Architecture.");
+</script>
+</body>
+</html>

@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>跳一跳 3D版</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: #fceeb5;
+      font-family: 'Arial', sans-serif;
+      touch-action: none; /* 禁止默认触摸行为 */
+    }
+
+    #score-container {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      color: #333;
+      font-size: 30px;
+      font-weight: bold;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    #game-over {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      display: none;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      z-index: 20;
+    }
+
+    #game-over h2 {
+      margin: 0 0 10px 0;
+      font-size: 32px;
+      color: #333;
+    }
+
+    #final-score {
+      font-size: 48px;
+      color: #e74c3c;
+      margin: 10px 0 30px 0;
+      font-weight: bold;
+    }
+
+    button {
+      background-color: #333;
+      color: white;
+      border: none;
+      padding: 15px 40px;
+      font-size: 18px;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    button:active {
+      transform: scale(0.95);
+    }
+
+    #instructions {
+      position: absolute;
+      bottom: 30px;
+      width: 100%;
+      text-align: center;
+      color: #888;
+      pointer-events: none;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- UI 元素 -->
+<div id="score-container">得分: <span id="score">0</span></div>
+
+<div id="game-over">
+  <h2>游戏结束</h2>
+  <div id="final-score">0</div>
+  <button onclick="restartGame()">再试一次</button>
+</div>
+
+<div id="instructions">按住空格键蓄力，松开必中</div>
+
+<!-- 引入 Three.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<script>
+  // --- 游戏配置常量 ---
+  const CONFIG = {
+    backgroundColor: 0xfceeb5, // 背景色
+    playerColor: 0x3d3d3d,     // 玩家颜色
+    platformColors: [0xffffff, 0xffd180, 0x80d8ff, 0xccff90, 0xff80ab], // 随机台阶颜色
+    cubeSize: 40,              // 台阶大小
+    playerHeight: 40,          // 玩家高度
+    gravity: 0.15,             // 重力
+    jumpSpeedBase: 2,          // 跳跃基础速度系数
+    maxCompression: 0.5,       // 最大蓄力压缩比例
+    cameraViewSize: 200,       // 相机视野大小
+    autoJumpVy: 4.5            // [新增] 自动跳跃的固定垂直初速度
+  };
+
+  // --- 全局变量 ---
+  let scene, camera, renderer;
+  let player, platforms = [];
+  let score = 0;
+  let isGameRunning = false;
+
+  // 状态变量
+  let state = {
+    phase: 'ready', // ready, charging, jumping, falling, gameover
+    compression: 0,
+    velocity: { x: 0, y: 0, z: 0 },
+    targetPosition: { x: 0, z: 0 },
+    chargeStartTime: 0
+  };
+
+  // DOM 元素
+  const scoreEl = document.getElementById('score');
+  const finalScoreEl = document.getElementById('final-score');
+  const gameOverEl = document.getElementById('game-over');
+  const instructionsEl = document.getElementById('instructions');
+
+  // --- 初始化 ---
+  function init() {
+    // 1. 创建场景
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(CONFIG.backgroundColor);
+
+    // 2. 创建相机 (正交相机以获得等距视角)
+    const aspect = window.innerWidth / window.innerHeight;
+    const d = CONFIG.cameraViewSize;
+    camera = new THREE.OrthographicCamera(-d * aspect, d * aspect, d, -d, 1, 1000);
+    camera.position.set(200, 200, 200); // 放在斜上方
+    camera.lookAt(0, 0, 0);
+
+    // 3. 创建渲染器
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true; // 开启阴影
+    document.body.appendChild(renderer.domElement);
+
+    // 4. 灯光
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
+    dirLight.position.set(100, 200, 50);
+    dirLight.castShadow = true;
+
+    // 优化阴影质量
+    dirLight.shadow.mapSize.width = 2048;
+    dirLight.shadow.mapSize.height = 2048;
+    const dLight = 300;
+    dirLight.shadow.camera.left = -dLight;
+    dirLight.shadow.camera.right = dLight;
+    dirLight.shadow.camera.top = dLight;
+    dirLight.shadow.camera.bottom = -dLight;
+
+    scene.add(dirLight);
+
+    // 5. 事件监听
+    window.addEventListener('resize', onWindowResize);
+
+    // 键盘空格键控制
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        onInputStart();
+      }
+    });
+    document.addEventListener('keyup', (e) => {
+      if (e.code === 'Space') {
+        onInputEnd();
+      }
+    });
+
+    // 更新说明文案
+    instructionsEl.innerText = "按住空格键蓄力，松开必中";
+
+    startGame();
+    animate();
+  }
+
+  // --- 游戏逻辑 ---
+
+  function startGame() {
+    // 清理旧场景对象
+    platforms.forEach(p => scene.remove(p));
+    if (player) scene.remove(player);
+    platforms = [];
+
+    // 初始得分 2000
+    score = 2000;
+    scoreEl.innerText = score;
+    gameOverEl.style.display = 'none';
+    isGameRunning = true;
+    state.phase = 'ready';
+
+    // 重置相机位置
+    camera.position.set(200, 200, 200);
+    camera.lookAt(0, 0, 0);
+
+    // 生成身后已经跳过的方格 (视觉装饰)
+    generateHistoryPlatforms();
+
+    // 创建当前起跳点 (起点)
+    createPlatform(0, 0, true);
+
+    // 创建下一个目标台阶
+    createPlatform(1, 0, false);
+
+    // 创建玩家
+    createPlayer();
+  }
+
+  // 生成历史台阶函数
+  function generateHistoryPlatforms() {
+    let currX = 0;
+    let currZ = 0;
+    const historyCount = 10; // 生成身后10个台阶
+    const posList = [];
+
+    // 倒推位置计算
+    for (let i = 0; i < historyCount; i++) {
+      const distance = Math.floor(Math.random() * 80) + 70;
+      // 随机反向
+      const direction = Math.random() < 0.5 ? 0 : 1;
+
+      if (direction === 0) currX += distance;
+      else currZ += distance;
+
+      // 存入头部，保证渲染顺序
+      posList.unshift({x: currX, z: currZ});
+    }
+
+    // 渲染这些台阶
+    posList.forEach(pos => {
+      createPlatform(pos.x, pos.z, false, true); // true 表示手动指定位置
+    });
+  }
+
+  function createPlayer() {
+    // 玩家是一个简单的几何体组合
+    const geometry = new THREE.BoxGeometry(10, CONFIG.playerHeight, 10);
+    geometry.translate(0, CONFIG.playerHeight / 2, 0); // 将原点移到底部
+    const material = new THREE.MeshLambertMaterial({ color: CONFIG.playerColor });
+    player = new THREE.Mesh(geometry, material);
+    player.position.set(0, CONFIG.cubeSize, 0); // 站在第一个台阶上
+    player.castShadow = true;
+    player.receiveShadow = true;
+
+    // 添加一个"头"让它看起来更像棋子
+    const headGeo = new THREE.BoxGeometry(12, 6, 12);
+    headGeo.translate(0, CONFIG.playerHeight + 3, 0);
+    const headMesh = new THREE.Mesh(headGeo, material);
+    headMesh.castShadow = true;
+    player.add(headMesh); // 作为一个整体
+
+    scene.add(player);
+  }
+
+  // 增加 manualPosition 参数，允许强制指定位置
+  function createPlatform(x, z, isFirst, manualPosition = false) {
+    // 随机颜色
+    const color = isFirst ? 0xffffff : CONFIG.platformColors[Math.floor(Math.random() * CONFIG.platformColors.length)];
+
+    const geometry = new THREE.BoxGeometry(CONFIG.cubeSize, CONFIG.cubeSize, CONFIG.cubeSize);
+    // 将中心上移，使得 y=0 是顶部
+    geometry.translate(0, CONFIG.cubeSize / 2, 0);
+
+    const material = new THREE.MeshLambertMaterial({ color: color });
+    const platform = new THREE.Mesh(geometry, material);
+
+    // 位置逻辑
+    if (!isFirst && !manualPosition) {
+      const prev = platforms[platforms.length - 1];
+      const distance = Math.floor(Math.random() * 80) + 70; // 随机距离 70 ~ 150
+      // 随机方向: 0 是 x轴, 1 是 z轴
+      const direction = Math.random() < 0.5 ? 0 : 1;
+
+      if (direction === 0) {
+        platform.position.set(prev.position.x - distance, 0, prev.position.z);
+      } else {
+        platform.position.set(prev.position.x, 0, prev.position.z - distance);
+      }
+    } else {
+      // 使用传入的 x, z
+      platform.position.set(x, 0, z);
+    }
+
+    platform.castShadow = true;
+    platform.receiveShadow = true;
+    scene.add(platform);
+    platforms.push(platform);
+
+    // 清理阈值
+    if (platforms.length > 25) {
+      const old = platforms.shift();
+      scene.remove(old);
+    }
+  }
+
+  function generateNextPlatform() {
+    createPlatform(0, 0, false);
+  }
+
+  // --- 输入处理 ---
+
+  function onInputStart() {
+    if (!isGameRunning || state.phase !== 'ready') return;
+    state.phase = 'charging';
+    state.chargeStartTime = Date.now();
+  }
+
+  function onInputEnd() {
+    if (!isGameRunning || state.phase !== 'charging') return;
+    jump();
+  }
+
+  function jump() {
+    state.phase = 'jumping';
+
+    // 恢复玩家形状
+    player.scale.set(1, 1, 1);
+
+    // 1. 设定一个固定的舒适的垂直起跳速度
+    state.velocity.y = CONFIG.autoJumpVy;
+
+    // 2. 模拟物理引擎计算滞空时间 (Frames)
+    let simVy = state.velocity.y;
+    let simY = 0;
+    let frames = 0;
+
+    while (true) {
+      simY += simVy;
+      simVy -= CONFIG.gravity;
+      frames++;
+      if (simY <= 0) break;
+    }
+
+    // 3. 计算目标距离 (直线随机，不斜跳)
+    const currentPlatform = platforms[platforms.length - 2];
+    const nextPlatform = platforms[platforms.length - 1];
+
+    // 判断台阶方向
+    // 如果 X 差值大，说明主要在 X 轴移动
+    const platDiffX = nextPlatform.position.x - currentPlatform.position.x;
+    const platDiffZ = nextPlatform.position.z - currentPlatform.position.z;
+
+    // 随机偏移 (只在距离上随机，不影响直线)
+    const maxOffset = CONFIG.cubeSize / 2 - 5;
+    const randomOffset = (Math.random() * 2 - 1) * maxOffset;
+
+    let targetX, targetZ;
+
+    if (Math.abs(platDiffX) > Math.abs(platDiffZ)) {
+      // 方向：X轴
+      // 目标 X = 台阶中心 + 随机偏移 (远近变化)
+      targetX = nextPlatform.position.x + randomOffset;
+      // 目标 Z = 玩家当前 Z (保持直线，不侧移)
+      targetZ = player.position.z;
+    } else {
+      // 方向：Z轴
+      // 目标 X = 玩家当前 X (保持直线，不侧移)
+      targetX = player.position.x;
+      // 目标 Z = 台阶中心 + 随机偏移 (远近变化)
+      targetZ = nextPlatform.position.z + randomOffset;
+    }
+
+    const diffX = targetX - player.position.x;
+    const diffZ = targetZ - player.position.z;
+
+    // 4. 反推水平速度
+    state.velocity.x = diffX / frames;
+    state.velocity.z = diffZ / frames;
+
+    // 设置旋转朝向
+    if (Math.abs(platDiffX) > Math.abs(platDiffZ)) {
+      player.rotation.y = 0;
+    } else {
+      player.rotation.y = -Math.PI / 2;
+    }
+  }
+
+  // --- 核心动画循环 ---
+
+  function animate() {
+    requestAnimationFrame(animate);
+
+    if (!isGameRunning) return;
+
+    // 1. 蓄力阶段：压扁玩家
+    if (state.phase === 'charging') {
+      if (player.scale.y > 1 - CONFIG.maxCompression) {
+        player.scale.y -= 0.02;
+        // 保持底部接触地面
+        player.scale.x += 0.01;
+        player.scale.z += 0.01;
+      }
+    }
+
+    // 2. 跳跃阶段：物理运动
+    if (state.phase === 'jumping') {
+      player.position.x += state.velocity.x;
+      player.position.z += state.velocity.z;
+      player.position.y += state.velocity.y;
+
+      // 简单的翻转动画
+      if (state.velocity.x !== 0) player.rotation.z -= 0.15;
+      if (state.velocity.z !== 0) player.rotation.x -= 0.15;
+
+      // 重力应用
+      state.velocity.y -= CONFIG.gravity;
+
+      // 落地检测
+      if (player.position.y <= CONFIG.cubeSize) {
+        checkLanding();
+      }
+    }
+
+    // 3. 失败下落阶段
+    if (state.phase === 'falling') {
+      player.position.y -= 4; // 快速掉落
+      if (player.position.y < -200) {
+        handleGameOver();
+      }
+    }
+
+    // 4. 相机平滑跟随
+    if (state.phase !== 'falling') {
+      const targetCamX = player.position.x + 200;
+      const targetCamZ = player.position.z + 200;
+
+      camera.position.x += (targetCamX - camera.position.x) * 0.1;
+      camera.position.z += (targetCamZ - camera.position.z) * 0.1;
+    }
+
+    renderer.render(scene, camera);
+  }
+
+  function checkLanding() {
+    state.phase = 'landed';
+
+    // 恢复 Y 位置为台阶顶部
+    player.position.y = CONFIG.cubeSize;
+    player.rotation.set(0, 0, 0);
+    state.velocity = { x: 0, y: 0, z: 0 };
+    player.scale.set(1, 1, 1);
+
+    const platform = platforms[platforms.length - 1]; // 目标方块
+    const prevPlatform = platforms[platforms.length - 2]; // 起跳方块
+
+    const tolerance = CONFIG.cubeSize / 2 + 5;
+
+    const distToNext = Math.sqrt(Math.pow(player.position.x - platform.position.x, 2) + Math.pow(player.position.z - platform.position.z, 2));
+    const distToPrev = Math.sqrt(Math.pow(player.position.x - prevPlatform.position.x, 2) + Math.pow(player.position.z - prevPlatform.position.z, 2));
+
+    if (distToNext < tolerance) {
+      // 成功
+      score++;
+      scoreEl.innerText = score;
+      generateNextPlatform();
+      state.phase = 'ready';
+    } else if (distToPrev < tolerance) {
+      // 原地
+      state.phase = 'ready';
+    } else {
+      // 失败
+      state.phase = 'falling';
+    }
+  }
+
+  function handleGameOver() {
+    isGameRunning = false;
+    finalScoreEl.innerText = score;
+    gameOverEl.style.display = 'block';
+  }
+
+  function restartGame() {
+    startGame();
+  }
+
+  function onWindowResize() {
+    const aspect = window.innerWidth / window.innerHeight;
+    const d = CONFIG.cameraViewSize;
+
+    camera.left = -d * aspect;
+    camera.right = d * aspect;
+    camera.top = d;
+    camera.bottom = -d;
+
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+
+  // 启动
+  init();
+
+</script>
+</body>
+</html>

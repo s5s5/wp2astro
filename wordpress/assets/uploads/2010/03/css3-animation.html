@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>css3 animation</title>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.1/jquery.min.js"></script>
+<style>
+.animation {
+	-webkit-animation-name: bounce;
+	-webkit-animation-duration: 1s;
+	-webkit-animation-iteration-count: 10;
+	-webkit-animation-direction: alternate;
+	-webkit-border-radius:100px;
+	position: relative;
+	left: 0;
+	top:100px;
+	width:100px;
+	height:100px;
+	text-align:center;
+	line-height:100px;
+	background:#F00;
+}
+@-webkit-keyframes bounce {
+	from {
+		top: 0;
+		-webkit-animation-timing-function: ease-out;
+	}
+	25% {
+		top: 110px;
+		-webkit-animation-timing-function: ease-out;
+	}
+	50% {
+		top: 50px;
+		-webkit-animation-timing-function: ease-out;
+	}
+	75% {
+		top: 90px;
+		-webkit-animation-timing-function: ease-out;
+	}
+	to {
+		top: 100px;
+	}
+}
+</style>
+</head>
+<body>
+<div class="animation">皮球</div>
+<script>
+$(document).ready(function(){
+if ($.browser.opera) {
+alert("你使用的是非webkit内核浏览器，不能正常看到本页效果，请下载最新版webkit内核浏览器（谷歌浏览器）来浏览本网页");
+}
+if ($.browser.msie) {
+alert("你使用的是非webkit内核浏览器，不能正常看到本页效果，请下载最新版webkit内核浏览器（谷歌浏览器）来浏览本网页");
+}
+if ($.browser.mozilla) {
+alert("你使用的是非webkit内核浏览器，不能正常看到本页效果，请下载最新版webkit内核浏览器（谷歌浏览器）来浏览本网页");
+}
+});
+</script>
+</body>
+</html>
+

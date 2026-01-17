@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Markdown Studio - Astro Frontmatter Editor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- markdown-it 核心库 -->
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600&display=swap");
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: #f3f4f6;
+      }
+      .editor-font {
+        font-family: "Fira Code", monospace;
+      }
+      .prose {
+        max-width: none;
+      }
+      .main-container {
+        height: calc(100vh - 64px);
+      }
+
+      /* 强化后的输入框样式 */
+      .input-field {
+        @apply bg-white border border-gray-400 rounded px-3 py-1.5 text-sm
+      focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+      hover:border-gray-600 outline-none transition-all shadow-sm;
+      }
+
+      /* 标签文字样式 */
+      .label-text {
+        @apply text-xs font-bold text-gray-700 uppercase mb-1.5 block;
+      }
+
+      /* 预览样式优化 */
+      #markdown-output blockquote {
+        border-left: 4px solid #6366f1;
+        padding-left: 1rem;
+        font-style: italic;
+        color: #4b5563;
+        background: #f8fafc;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        margin: 1.5rem 0;
+      }
+
+      /* 基础代码块样式（无高亮） */
+      #markdown-output pre {
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+        margin: 1.5rem 0;
+        background-color: #0d1117; /* 深色背景 */
+        color: #e6edf3;
+        overflow-x: auto;
+      }
+      #markdown-output code {
+        font-family: "Fira Code", monospace;
+      }
+      #markdown-output :not(pre) > code {
+        background-color: #f1f5f9;
+        color: #475569;
+        padding: 0.2rem 0.4rem;
+        border-radius: 0.25rem;
+        font-size: 0.875em;
+      }
+    </style>
+  </head>
+  <body class="overflow-hidden">
+    <!-- 导航栏 -->
+    <nav
+      class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 z-20 relative"
+    >
+      <div class="flex items-center space-x-3">
+        <div class="bg-indigo-600 text-white p-1.5 rounded-lg shadow-sm">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+            />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold text-gray-800 leading-none">
+            Markdown Studio
+          </h1>
+          <p
+            class="text-[10px] text-gray-400 mt-1 uppercase tracking-widest font-bold"
+          >
+            Astro Edition
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <button
+          onclick="copyFullMarkdown()"
+          class="flex items-center space-x-1 text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+            />
+          </svg>
+          <span>复制全量</span>
+        </button>
+        <button
+          onclick="downloadFile()"
+          class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all active:scale-95"
+        >
+          导出 .md
+        </button>
+      </div>
+    </nav>
+
+    <!-- 主容器 -->
+    <main class="main-container flex w-full">
+      <!-- 左侧：编辑器区域 -->
+      <section
+        class="w-1/2 flex flex-col bg-white border-r border-gray-200 overflow-hidden"
+      >
+        <!-- Frontmatter 编辑器面板 -->
+        <div class="p-5 bg-gray-50 border-b border-gray-200 shadow-inner">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-extrabold text-gray-800 flex items-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4 mr-1 text-indigo-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+              Frontmatter 配置
+            </h3>
+            <div
+              id="status-badge"
+              class="px-2 py-0.5 rounded-full bg-indigo-100 text-[10px] text-indigo-700 font-bold uppercase tracking-wider"
+            >
+              markdown-it Active
+            </div>
+          </div>
+
+          <div class="grid grid-cols-6 gap-4">
+            <div class="col-span-1">
+              <label class="label-text">ID</label>
+              <input
+                type="number"
+                id="fm-id"
+                class="input-field border w-full"
+                value="5"
+                oninput="syncPreview()"
+              />
+            </div>
+            <div class="col-span-3">
+              <label class="label-text">文章标题</label>
+              <input
+                type="text"
+                id="fm-title"
+                class="input-field border w-full"
+                value="新的BLOG又开始了"
+                oninput="syncPreview()"
+              />
+            </div>
+            <div class="col-span-2">
+              <label class="label-text">分类</label>
+              <input
+                type="text"
+                id="fm-category"
+                class="input-field border w-full"
+                value="First Category"
+                oninput="syncPreview()"
+              />
+            </div>
+            <div class="col-span-2">
+              <label class="label-text">位置</label>
+              <div class="relative">
+                <input
+                  type="text"
+                  id="fm-location"
+                  class="input-field border w-full pr-8"
+                  value="成都"
+                  onchange="handleLocationChange()"
+                />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-4 w-4 absolute right-2 top-2.5 text-gray-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <div class="col-span-1">
+              <label class="label-text">天气 (当天)</label>
+              <input
+                type="text"
+                id="fm-weather"
+                class="input-field border w-full bg-gray-100 border-gray-400 cursor-not-allowed opacity-75"
+                value="正在获取..."
+                readonly
+              />
+            </div>
+            <div class="col-span-3">
+              <label class="label-text text-indigo-700"
+                >发布日期 (pubDate)</label
+              >
+              <div class="flex space-x-2">
+                <input
+                  type="text"
+                  id="fm-date"
+                  class="input-field border flex-1"
+                  oninput="syncPreview()"
+                />
+                <button
+                  onclick="updateDateToNow()"
+                  class="bg-gray-200 border border-gray-400 hover:bg-gray-300 p-2 rounded transition-colors shadow-sm"
+                  title="更新为当前时间"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4 text-gray-700"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 正文编辑器 -->
+        <div class="flex-1 relative">
+          <div
+            class="absolute top-2 right-6 z-10 text-[10px] font-black text-gray-300 uppercase tracking-widest pointer-events-none"
+          >
+            Markdown Content
+          </div>
+          <textarea
+            id="markdown-body"
+            class="w-full h-full p-8 editor-font text-gray-800 focus:outline-none resize-none leading-relaxed"
+            placeholder="输入 Markdown 正文..."
+            spellcheck="false"
+            oninput="syncPreview()"
+          ></textarea>
+        </div>
+      </section>
+
+      <!-- 右侧：预览区域 -->
+      <section class="w-1/2 bg-white overflow-y-auto" id="preview-container">
+        <div class="p-8 mx-auto">
+          <!-- Frontmatter 渲染快照 -->
+          <div
+            id="fm-preview-display"
+            class="mb-8 p-5 bg-indigo-50 border border-indigo-200 rounded-lg editor-font text-xs text-indigo-800 whitespace-pre shadow-sm"
+          ></div>
+          <!-- Markdown 正文预览 -->
+          <div id="markdown-output" class="prose prose-slate"></div>
+        </div>
+      </section>
+    </main>
+
+    <div
+      id="toast"
+      class="fixed bottom-10 left-1/2 -translate-x-1/2 px-6 py-3 bg-gray-900 text-white rounded-full text-sm font-medium opacity-0 transition-all duration-300 pointer-events-none shadow-2xl z-50"
+    ></div>
+
+    <script>
+      // 初始化全局变量
+      const bodyInput = document.getElementById("markdown-body");
+      const outputDisplay = document.getElementById("markdown-output");
+      const fmDisplay = document.getElementById("fm-preview-display");
+      const statusBadge = document.getElementById("status-badge");
+
+      const fmInputs = {
+        id: document.getElementById("fm-id"),
+        title: document.getElementById("fm-title"),
+        category: document.getElementById("fm-category"),
+        location: document.getElementById("fm-location"),
+        weather: document.getElementById("fm-weather"),
+        pubDate: document.getElementById("fm-date")
+      };
+
+      const weatherMap = {
+        0: "晴",
+        1: "晴到多云",
+        2: "多云",
+        3: "阴",
+        45: "雾",
+        48: "雾凇",
+        51: "毛毛雨",
+        53: "中毛毛雨",
+        55: "大毛毛雨",
+        56: "小冻毛毛雨",
+        57: "大冻毛毛雨",
+        61: "小雨",
+        63: "中雨",
+        65: "大雨",
+        66: "小冻雨",
+        67: "大冻雨",
+        71: "小雪",
+        73: "中雪",
+        75: "大雪",
+        77: "米雪",
+        80: "阵雨",
+        81: "中阵雨",
+        82: "强阵雨",
+        85: "小阵雪",
+        86: "大阵雪",
+        95: "雷阵雨",
+        96: "雷阵雨伴冰雹",
+        99: "强雷阵雨伴冰雹"
+      };
+
+      // 初始化 markdown-it
+      const md = window.markdownit({
+        html: true,
+        linkify: true,
+        typography: true,
+        breaks: true
+      });
+
+      // 同步预览函数
+      function syncPreview() {
+        const meta = {
+          id: fmInputs.id.value,
+          title: fmInputs.title.value,
+          pubDate: fmInputs.pubDate.value,
+          category: fmInputs.category.value,
+          weather: fmInputs.weather.value,
+          location: fmInputs.location.value
+        };
+
+        const yaml = `---
+id: ${meta.id}
+title: "${meta.title.replace(/"/g, '\\"')}"
+pubDate: "${meta.pubDate}"
+category: "${meta.category}"
+weather: "${meta.weather}"
+location: "${meta.location}"
+---`;
+
+        fmDisplay.textContent = yaml;
+        outputDisplay.innerHTML = md.render(bodyInput.value);
+      }
+
+      // 日期逻辑
+      function updateDateToNow() {
+        const now = new Date();
+        const formatted = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")} ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}:${String(now.getSeconds()).padStart(2, "0")}`;
+        fmInputs.pubDate.value = formatted;
+        syncPreview();
+        showToast("日期已更新为当前时间");
+      }
+
+      // 天气逻辑
+      async function handleLocationChange() {
+        const cityName = fmInputs.location.value.trim();
+        if (!cityName) return;
+
+        statusBadge.textContent = "SYNCING...";
+        fmInputs.weather.value = "获取中...";
+
+        try {
+          const geoRes = await fetch(
+            `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=1&language=zh&format=json`
+          );
+          const geoData = await geoRes.json();
+
+          if (geoData.results && geoData.results.length > 0) {
+            const { latitude, longitude, name } = geoData.results[0];
+            fmInputs.location.value = name;
+            const weatherRes = await fetch(
+              `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=weather_code&timezone=auto`
+            );
+            const weatherData = await weatherRes.json();
+
+            if (weatherData.daily && weatherData.daily.weather_code) {
+              const wCode = String(weatherData.daily.weather_code[0]);
+              fmInputs.weather.value = weatherMap[wCode] || "未知";
+            }
+          } else {
+            fmInputs.weather.value = "找不着地点";
+          }
+          statusBadge.textContent = "SYNCED";
+        } catch (err) {
+          fmInputs.weather.value = "同步失败";
+          statusBadge.textContent = "ERROR";
+        }
+        syncPreview();
+      }
+
+      // 工具函数
+      function showToast(msg) {
+        const toast = document.getElementById("toast");
+        toast.textContent = msg;
+        toast.classList.replace("opacity-0", "opacity-100");
+        setTimeout(
+          () => toast.classList.replace("opacity-100", "opacity-0"),
+          2000
+        );
+      }
+
+      function copyFullMarkdown() {
+        const yaml = fmDisplay.textContent;
+        const body = bodyInput.value;
+        const fullText = `${yaml}\n\n${body}`;
+        const textArea = document.createElement("textarea");
+        textArea.value = fullText;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+        showToast("全量 Markdown 已复制");
+      }
+
+      function downloadFile() {
+        const yaml = fmDisplay.textContent;
+        const body = bodyInput.value;
+        const fullText = `${yaml}\n\n${body}`;
+        const idValue = fmInputs.id.value.trim() || "post";
+        const fileName = `${idValue}.md`;
+        const blob = new Blob([fullText], { type: "text/markdown" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fileName;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast(`文件 ${fileName} 已导出`);
+      }
+
+      bodyInput.addEventListener("input", syncPreview);
+      bodyInput.addEventListener("scroll", () => {
+        const scrollPercentage =
+          bodyInput.scrollTop /
+          (bodyInput.scrollHeight - bodyInput.clientHeight);
+        const container = document.getElementById("preview-container");
+        container.scrollTop =
+          scrollPercentage * (container.scrollHeight - container.clientHeight);
+      });
+
+      window.onload = () => {
+        bodyInput.value = `# 极简模式\n\n已去掉 \`highlight.js\`，现在解析更加纯粹。\n\n\`\`\`javascript\nconst hello = "Minimalist";\nconsole.log(hello);\n\`\`\``;
+        const now = new Date();
+        fmInputs.pubDate.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")} ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}:${String(now.getSeconds()).padStart(2, "0")}`;
+        handleLocationChange();
+        syncPreview();
+      };
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1783 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>[米随随] s5s5 - Pixel Portal</title>
+    <!-- 引入 JetBrains Mono 字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* =========================================
+       1. VARIABLES & THEME
+       ========================================= */
+      :root {
+        /* 亮色模式 (Light Mode) */
+        --bg-color: #6a7680;
+        --container-bg: #999;
+        --border-color: #000;
+
+        --cell-bg: #fff;
+        --cell-bg-alt: #f1f3f5;
+
+        --highlight: #0073aa; /* 品牌蓝 */
+        --highlight-text: #fff;
+
+        --text-main: #333;
+        --text-muted: #666;
+
+        --link-color: #4a5a6a;
+        --link-hover: #0073aa;
+
+        --pattern-col: rgba(0, 0, 0, 0.03);
+
+        /* Canvas 专属颜色 */
+        --canvas-bg: #f7f7f7;
+        --canvas-line: #535353;
+        --canvas-accent: #ff6600; /* 活力橙 (主角) */
+
+        /* Fonts */
+        --font-stack: "Verdana", "Geneva", sans-serif;
+        --font-mono: "JetBrains Mono", "Courier New", monospace;
+      }
+
+      /* 暗色模式 (Dark Mode) */
+      [data-theme="dark"] {
+        --bg-color: #111;
+        --container-bg: #444;
+        --border-color: #666;
+
+        --cell-bg: #1e1e1e;
+        --cell-bg-alt: #252525;
+
+        --highlight: #0073aa;
+        --highlight-text: #fff;
+
+        --text-main: #ddd;
+        --text-muted: #888;
+
+        --link-color: #8ab0c0;
+        --link-hover: #3399cc;
+
+        --pattern-col: rgba(255, 255, 255, 0.05);
+
+        --canvas-bg: #202124;
+        --canvas-line: #acacac;
+        --canvas-accent: #ff6600;
+      }
+
+      /* =========================================
+       2. BASE & RESET
+       ========================================= */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background-color: var(--bg-color);
+        background-image: radial-gradient(
+          var(--container-bg) 1px,
+          transparent 1px
+        );
+        background-size: 4px 4px;
+        font-family: var(--font-stack);
+        font-size: 11px;
+        color: var(--text-main);
+        line-height: 1.5;
+        padding: 20px 0;
+        -webkit-font-smoothing: antialiased; /* Better text rendering */
+      }
+
+      a {
+        text-decoration: none;
+        color: var(--link-color);
+        transition: none;
+      }
+      a:hover {
+        color: var(--link-hover);
+        background: var(--cell-bg-alt);
+      }
+      button,
+      input,
+      textarea {
+        font-family: inherit;
+        outline: none;
+      }
+
+      /* =========================================
+       3. LAYOUT (Grid System)
+       ========================================= */
+      .container {
+        width: 100%;
+        max-width: 1111px;
+        margin: 0 auto;
+        background-color: var(--container-bg);
+        border: 1px solid var(--border-color);
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        display: grid;
+        grid-template-columns: 160px 1fr 220px;
+        gap: 1px;
+      }
+
+      .cell {
+        background-color: var(--cell-bg);
+        overflow: hidden;
+      }
+      .cell-pad {
+        padding: 12px;
+      }
+      .cell-alt {
+        background-color: var(--cell-bg-alt);
+      }
+
+      .layout-header {
+        grid-column: 1 / -1;
+        height: 90px;
+        position: relative;
+        border-bottom: 1px solid var(--container-bg);
+        background-color: var(--cell-bg-alt);
+        background-image: repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 2px,
+          var(--pattern-col) 2px,
+          var(--pattern-col) 4px
+        );
+      }
+      .layout-sidebar-l {
+        display: flex;
+        flex-direction: column;
+      }
+      .layout-main {
+        display: flex;
+        flex-direction: column;
+      }
+      .layout-sidebar-r {
+        display: flex;
+        flex-direction: column;
+      }
+      .layout-footer {
+        grid-column: 1 / -1;
+        background: var(--cell-bg-alt);
+        color: var(--text-muted);
+        padding: 15px;
+        text-align: center;
+        border-top: 1px solid var(--container-bg);
+        font-family: var(--font-mono);
+        font-size: 9px;
+      }
+
+      /* Responsive */
+      @media (max-width: 800px) {
+        body {
+          padding: 0;
+        }
+        .container {
+          border: none;
+          box-shadow: none;
+          grid-template-columns: 1fr;
+          gap: 1px;
+        }
+        .layout-header {
+          height: auto;
+          min-height: 100px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          padding-bottom: 10px;
+        }
+        .header-top-bar {
+          width: 100%;
+          position: absolute;
+          top: 0;
+        }
+        .site-area {
+          position: static !important;
+          margin-top: 20px;
+          margin-bottom: 10px;
+          box-shadow: none !important;
+        }
+        .nav-bar {
+          position: static !important;
+          flex-wrap: wrap;
+          justify-content: center;
+          background: transparent !important;
+          border: none !important;
+          padding: 0 !important;
+        }
+
+        .layout-main {
+          order: 2;
+        }
+        .layout-sidebar-r {
+          order: 3;
+        }
+        .layout-sidebar-l {
+          order: 4;
+        }
+        .layout-footer {
+          order: 5;
+        }
+      }
+
+      /* =========================================
+       4. COMPONENTS
+       ========================================= */
+
+      /* Header */
+      .header-top-bar {
+        height: 5px;
+        background: var(--text-main);
+        border-bottom: 1px solid var(--container-bg);
+      }
+      .site-area {
+        position: absolute;
+        bottom: 15px;
+        left: 20px;
+        z-index: 2;
+        background: var(--cell-bg);
+        padding: 5px 12px;
+        border: 1px solid var(--container-bg);
+        box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.15);
+      }
+      .site-title {
+        font-family: var(--font-mono);
+        font-weight: 800;
+        font-size: 24px;
+        color: var(--text-main);
+        line-height: 1;
+        letter-spacing: -1px;
+        text-transform: uppercase;
+      }
+      .site-description {
+        font-size: 9px;
+        color: var(--text-muted);
+        font-family: var(--font-mono);
+        margin-top: 6px;
+        display: block;
+        border-top: 1px solid var(--container-bg);
+        padding-top: 4px;
+      }
+
+      /* Nav */
+      .nav-bar {
+        position: absolute;
+        bottom: 15px;
+        right: 20px;
+        display: flex;
+        gap: 4px;
+        background: var(--cell-bg);
+        padding: 4px;
+        border: 1px solid var(--container-bg);
+      }
+      .nav-btn {
+        background: var(--cell-bg);
+        border: 1px solid var(--container-bg);
+        color: var(--text-main);
+        font-size: 10px;
+        font-weight: bold;
+        text-transform: uppercase;
+        padding: 4px 10px;
+        cursor: pointer;
+        box-shadow: 1px 1px 0 var(--container-bg);
+        transition: all 0s;
+      }
+      .nav-btn:hover,
+      .nav-btn.active {
+        background: var(--highlight);
+        color: var(--highlight-text);
+        border-color: var(--border-color);
+        box-shadow: 1px 1px 0 var(--border-color);
+        transform: translate(-1px, -1px);
+      }
+
+      /* Modules */
+      .module-header {
+        background: var(--cell-bg-alt);
+        background-image: linear-gradient(
+          to bottom,
+          var(--cell-bg),
+          var(--cell-bg-alt)
+        );
+        padding: 6px 8px;
+        font-size: 10px;
+        font-weight: bold;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--container-bg);
+        letter-spacing: 1px;
+        margin-top: 1px;
+      }
+      .module-header:first-child {
+        margin-top: 0;
+      }
+
+      /* Pod Player */
+      .pod-container {
+        background: var(--cell-bg-alt);
+        padding: 10px;
+      }
+      .pod-player {
+        background: var(--cell-bg);
+        border: 1px solid var(--container-bg);
+        border-radius: 4px;
+        padding: 10px;
+        box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
+        text-align: center;
+      }
+      .pod-screen {
+        background: var(--cell-bg-alt);
+        border: 1px solid var(--container-bg);
+        border-radius: 2px;
+        padding: 6px;
+        margin-bottom: 10px;
+        font-family: var(--font-mono);
+        font-size: 9px;
+        color: var(--text-muted);
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.05);
+      }
+      .pod-wheel {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: var(--cell-bg-alt);
+        border: 1px solid var(--container-bg);
+        margin: 0 auto;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .pod-btn-center {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--cell-bg);
+        border: 1px solid var(--container-bg);
+        box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+      }
+      .pod-control-icon {
+        position: absolute;
+        font-size: 8px;
+        color: var(--text-muted);
+        font-weight: bold;
+        font-family: var(--font-stack);
+        cursor: default;
+      }
+      .pod-active-btn {
+        cursor: pointer;
+      }
+      .pod-active-btn:hover {
+        color: var(--highlight);
+      }
+      .pod-top {
+        top: 4px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      .pod-bottom {
+        bottom: 4px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      .pod-left {
+        left: 4px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+      .pod-right {
+        right: 4px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+
+      /* Badges */
+      .badge-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+      }
+      .badge-item {
+        aspect-ratio: 1;
+        background: var(--cell-bg);
+        border: 1px solid var(--container-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        cursor: default;
+        box-shadow: 1px 1px 0 var(--container-bg);
+        transition: transform 0.1s;
+        filter: grayscale(100%);
+        width: 100%;
+        max-width: 50px;
+        margin: 0 auto;
+      }
+      .badge-item:hover {
+        background: var(--cell-bg-alt);
+        border-color: var(--text-muted);
+        filter: grayscale(0%);
+      }
+
+      /* Theme Toggle */
+      .theme-btn {
+        width: 100%;
+        background: var(--cell-bg);
+        border: 1px solid var(--container-bg);
+        color: var(--text-main);
+        padding: 4px;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        cursor: pointer;
+      }
+      .theme-btn:hover {
+        background: var(--highlight);
+        color: var(--highlight-text);
+        border-color: var(--border-color);
+      }
+
+      /* Stats */
+      .stat-label {
+        text-align: center;
+        font-size: 9px;
+        color: var(--text-muted);
+        margin-bottom: 4px;
+        font-family: var(--font-mono);
+      }
+      .counter-box {
+        display: flex;
+        gap: 2px;
+        justify-content: center;
+        background: var(--cell-bg);
+        padding: 4px;
+        border: 1px solid var(--container-bg);
+        margin-bottom: 8px;
+      }
+      .counter-digit {
+        background: var(--cell-bg);
+        color: var(--text-main);
+        font-family: var(--font-mono);
+        font-weight: bold;
+        font-size: 11px;
+        width: 16px;
+        text-align: center;
+        border: 1px solid var(--container-bg);
+        border-bottom: 2px solid var(--container-bg);
+        border-radius: 2px;
+      }
+      .stat-row {
+        display: flex;
+        justify-content: space-between;
+        font-family: var(--font-mono);
+        font-size: 9px;
+        color: var(--text-muted);
+        border-bottom: 1px dotted var(--container-bg);
+        padding: 2px 0;
+      }
+      .stat-value {
+        font-weight: bold;
+        color: var(--text-main);
+      }
+      .stat-value.highlight {
+        color: var(--link-hover);
+      }
+
+      /* Profile */
+      .profile-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .profile-avatar {
+        width: 140px;
+        height: 140px;
+        background: var(--cell-bg-alt);
+        border: 1px solid var(--border-color);
+        margin-bottom: 8px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 2px 2px 0 var(--container-bg);
+      }
+      .profile-avatar-image {
+        font-family: var(--font-mono);
+        font-weight: 800;
+        font-size: 40px;
+        color: var(--text-main);
+      }
+      .profile-name {
+        font-weight: bold;
+        font-size: 12px;
+        margin-bottom: 2px;
+      }
+      .profile-info {
+        font-family: var(--font-mono);
+        font-size: 9px;
+        color: var(--text-muted);
+        line-height: 1.6;
+        border-top: 1px dotted var(--container-bg);
+        padding-top: 8px;
+      }
+      .profile-links {
+        display: grid;
+        gap: 4px;
+        margin-top: 8px;
+      }
+      .profile-btn {
+        display: block;
+        background: var(--cell-bg-alt);
+        padding: 2px 4px;
+        border: 1px solid var(--container-bg);
+        text-align: center;
+        text-decoration: none;
+        color: var(--text-muted);
+      }
+      .profile-btn:hover {
+        background: var(--highlight);
+        color: var(--highlight-text);
+        border-color: var(--border-color);
+      }
+
+      /* Calendar */
+      .calendar-wrapper {
+        background: var(--cell-bg-alt);
+        border: 1px solid var(--cell-bg);
+        border-right-color: var(--container-bg);
+        border-bottom-color: var(--container-bg);
+        padding: 6px;
+        font-family: var(--font-mono);
+      }
+      .cal-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+        background: var(--text-main);
+        color: var(--cell-bg);
+        padding: 2px;
+        border: 1px solid var(--border-color);
+        box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.1);
+      }
+      .cal-btn {
+        background: var(--container-bg);
+        border: 1px solid var(--cell-bg);
+        border-right-color: var(--text-main);
+        border-bottom-color: var(--text-main);
+        color: var(--cell-bg);
+        font-size: 9px;
+        width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        line-height: 1;
+      }
+      .cal-btn:active {
+        border: 1px solid var(--text-main);
+        border-right-color: var(--cell-bg);
+        border-bottom-color: var(--cell-bg);
+        background: var(--text-muted);
+      }
+      .cal-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 2px;
+        font-size: 9px;
+        text-align: center;
+      }
+      .cal-table th {
+        font-weight: normal;
+        color: var(--text-muted);
+        font-size: 8px;
+      }
+      .cal-table td {
+        background: var(--cell-bg);
+        border: 1px solid var(--cell-bg);
+        border-right-color: var(--container-bg);
+        border-bottom-color: var(--container-bg);
+        color: var(--text-main);
+        padding: 2px;
+        cursor: pointer;
+      }
+      .cal-table td:hover {
+        background: var(--cell-bg-alt);
+        color: var(--link-hover);
+      }
+      .cal-today {
+        background: var(--highlight) !important;
+        color: var(--highlight-text) !important;
+        font-weight: bold;
+        border: 1px solid var(--border-color) !important;
+        box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.2);
+      }
+      .cal-has-post {
+        background-color: var(--link-color) !important;
+        color: var(--cell-bg) !important;
+        font-weight: bold;
+        border: 1px solid var(--text-main) !important;
+        opacity: 0.8;
+      }
+
+      /* Link Grid */
+      .link-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4px;
+        margin-bottom: 10px;
+      }
+      .link-box {
+        background: var(--cell-bg-alt);
+        border: 1px solid var(--container-bg);
+        height: 31px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 8px;
+        color: var(--text-muted);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+      }
+      .link-box:hover {
+        border-color: var(--border-color);
+        color: var(--highlight-text);
+        background: var(--highlight);
+      }
+      .scanlines {
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 2px,
+          var(--pattern-col) 2px,
+          var(--pattern-col) 4px
+        );
+        pointer-events: none;
+      }
+
+      /* Post & Content */
+      .post-card {
+        border-bottom: 1px solid var(--container-bg);
+        margin-bottom: 0;
+        background: var(--cell-bg);
+        padding-bottom: 20px;
+      }
+      .post-card:last-child {
+        border-bottom: none;
+      }
+      .post-hero {
+        width: 100%;
+        height: 220px;
+        overflow: hidden;
+        position: relative;
+        background: var(--cell-bg-alt);
+        border-bottom: 1px solid var(--border-color);
+      }
+      .post-canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+        image-rendering: pixelated;
+      }
+      .post-weather {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: var(--text-main);
+        color: var(--cell-bg);
+        padding: 3px 6px;
+        font-size: 9px;
+        font-family: var(--font-mono);
+        border: 1px solid var(--cell-bg);
+        z-index: 2;
+        box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
+      }
+      .post-content {
+        padding: 15px 20px 0 20px;
+      }
+      .post-title {
+        font-size: 16px;
+        font-weight: bold;
+        color: var(--text-main);
+        margin-bottom: 6px;
+        letter-spacing: -0.5px;
+        cursor: pointer;
+      }
+      .post-title:hover {
+        color: var(--highlight);
+      }
+      .post-meta {
+        font-size: 9px;
+        color: var(--text-muted);
+        font-family: var(--font-mono);
+        margin-bottom: 10px;
+      }
+      .post-excerpt {
+        color: var(--text-muted);
+        font-size: 12px;
+        line-height: 1.6;
+        margin-bottom: 12px;
+      }
+      .btn-read {
+        display: inline-block;
+        background: var(--cell-bg);
+        border: 1px solid var(--container-bg);
+        color: var(--text-main);
+        padding: 3px 8px;
+        font-size: 9px;
+        cursor: pointer;
+        box-shadow: 1px 1px 0 var(--container-bg);
+      }
+      .btn-read:hover {
+        background: var(--highlight);
+        border-color: var(--border-color);
+        color: var(--highlight-text);
+        box-shadow: 1px 1px 0 var(--border-color);
+      }
+
+      /* Comments */
+      .comment-section {
+        margin-top: 30px;
+        border-top: 1px dotted var(--container-bg);
+        padding: 20px;
+        background: var(--cell-bg);
+      }
+      .comment-title {
+        font-weight: bold;
+        font-size: 11px;
+        margin-bottom: 15px;
+        color: var(--text-main);
+        background: var(--cell-bg-alt);
+        display: inline-block;
+        padding: 2px 6px;
+      }
+      .comment-item {
+        margin-bottom: 15px;
+        font-family: var(--font-stack);
+        font-size: 10px;
+      }
+      .comment-head {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 4px;
+        border-bottom: 1px solid var(--cell-bg-alt);
+        padding-bottom: 2px;
+      }
+      .comment-user {
+        font-weight: bold;
+        color: var(--text-main);
+      }
+      .comment-author-badge {
+        background: var(--text-main);
+        color: var(--cell-bg);
+        padding: 0 2px;
+        font-size: 8px;
+        margin-left: 5px;
+      }
+      .comment-date {
+        color: var(--text-muted);
+        font-family: var(--font-mono);
+      }
+      .comment-body {
+        color: var(--text-muted);
+        line-height: 1.4;
+        font-size: 12px;
+      }
+      .comment-replies {
+        margin-left: 25px;
+        margin-top: 10px;
+        padding-left: 10px;
+        border-left: 1px dotted var(--container-bg);
+      }
+
+      /* Form */
+      .comment-form {
+        margin-top: 25px;
+        background: var(--cell-bg-alt);
+        padding: 15px;
+        border: 1px solid var(--container-bg);
+      }
+      .form-label {
+        font-weight: bold;
+        font-size: 10px;
+        margin-bottom: 8px;
+        color: var(--text-muted);
+      }
+      .form-row {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+      .form-input {
+        flex: 1;
+        border: 1px solid var(--container-bg);
+        padding: 6px;
+        font-size: 12px;
+        font-family: var(--font-mono);
+        background: var(--cell-bg);
+        color: var(--text-main);
+      }
+      .form-submit {
+        background: var(--highlight);
+        border: 1px solid var(--border-color);
+        color: var(--highlight-text);
+        font-weight: bold;
+        padding: 0 20px;
+        cursor: pointer;
+        font-size: 10px;
+        flex: 0 0 auto;
+        box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
+      }
+      .form-submit:hover {
+        background: var(--cell-bg);
+        color: var(--text-main);
+        transform: translate(1px, 1px);
+        box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.1);
+      }
+
+      /* Pagination */
+      .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+        padding: 20px 0;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        border-top: 1px solid var(--container-bg);
+        background: var(--cell-bg);
+        margin-top: 1px;
+      }
+      .page-btn {
+        border: 1px solid var(--container-bg);
+        padding: 4px 8px;
+        cursor: pointer;
+        color: var(--text-muted);
+        background: var(--cell-bg);
+      }
+      .page-btn:hover,
+      .page-btn.active {
+        border-color: var(--border-color);
+        background: var(--highlight);
+        color: var(--highlight-text);
+      }
+      .page-dots {
+        padding: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- HEADER -->
+      <header class="layout-header header-row">
+        <div class="header-top-bar"></div>
+        <div class="logo-area">
+          <div class="logo-main">[米随随] s5s5</div>
+          <div class="logo-sub">// 基于人类交互 / 想象决定应用</div>
+        </div>
+        <nav class="nav-bar">
+          <button class="nav-btn active">Home</button>
+          <button class="nav-btn">First Category</button>
+          <button class="nav-btn">Other</button>
+          <button class="nav-btn">About Me</button>
+        </nav>
+      </header>
+
+      <!-- LEFT SIDEBAR -->
+      <aside class="cell layout-sidebar-l">
+        <div class="module-header">:: MUSIC</div>
+        <div class="cell-pad pod-container">
+          <div class="pod-player">
+            <div class="pod-screen">
+              <marquee scrollamount="2">Song: Lofi_Dream.mp3</marquee>
+            </div>
+            <div class="pod-wheel">
+              <div class="pod-control-icon pod-top">MENU</div>
+              <div class="pod-control-icon pod-bottom pod-active-btn">||</div>
+              <div class="pod-control-icon pod-left pod-active-btn">|&lt;</div>
+              <div class="pod-control-icon pod-right pod-active-btn">&gt;|</div>
+              <button class="pod-btn-center"></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="module-header">:: BADGES</div>
+        <div class="cell-pad cell-alt">
+          <div class="badge-grid">
+            <div class="badge-item" title="Cool">😎</div>
+            <div class="badge-item" title="Pixel Art">👾</div>
+            <div class="badge-item" title="Coding">💻</div>
+            <div class="badge-item" title="Coffee">☕</div>
+            <div class="badge-item" title="Music">🎵</div>
+            <div class="badge-item" title="Idea">💡</div>
+            <div class="badge-item" title="Camera">📷</div>
+            <div class="badge-item" title="Game">🕹️</div>
+            <div class="badge-item" title="Save">💾</div>
+          </div>
+        </div>
+
+        <div class="module-header">:: SETTINGS</div>
+        <div class="cell-pad">
+          <button id="theme-toggle" class="theme-btn">THEME: LIGHT</button>
+        </div>
+
+        <div class="module-header" style="margin-top: 1px">:: STATS</div>
+        <div class="cell-pad">
+          <div class="stat-label">VISITORS</div>
+          <div class="counter-box">
+            <span class="counter-digit">0</span
+            ><span class="counter-digit">8</span
+            ><span class="counter-digit">4</span>
+            <span class="counter-digit">2</span
+            ><span class="counter-digit">1</span
+            ><span class="counter-digit">9</span>
+          </div>
+          <div style="margin-top: 8px">
+            <div class="stat-row">
+              <span>ONLINE:</span><span class="stat-value highlight">12</span>
+            </div>
+            <div class="stat-row">
+              <span>TODAY:</span><span class="stat-value">143</span>
+            </div>
+            <div class="stat-row">
+              <span>SINCE:</span><span class="stat-value">2003</span>
+            </div>
+          </div>
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              gap: 4px;
+              margin-top: 8px;
+              opacity: 0.4;
+            "
+          >
+            <div
+              style="
+                width: 10px;
+                height: 10px;
+                background: #f90;
+                border-radius: 50%;
+              "
+              title="Firefox"
+            ></div>
+            <div
+              style="
+                width: 10px;
+                height: 10px;
+                background: #09c;
+                border-radius: 50%;
+              "
+              title="IE"
+            ></div>
+            <div
+              style="
+                width: 10px;
+                height: 10px;
+                background: #d00;
+                border-radius: 50%;
+              "
+              title="Opera"
+            ></div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- CENTER MAIN CONTENT -->
+      <main class="cell layout-main" id="main-content-area">
+        <!-- JS will render Hero Posts with Canvas here -->
+      </main>
+
+      <!-- RIGHT SIDEBAR -->
+      <aside class="cell layout-sidebar-r">
+        <div class="module-header">:: PROFILE</div>
+        <div class="cell-pad" style="padding-bottom: 5px">
+          <div class="profile-container">
+            <div class="profile-avatar">
+              <span class="profile-avatar-text">S5</span>
+            </div>
+            <div class="profile-name">Xiaochao Liu</div>
+          </div>
+          <div class="profile-info">
+            <div style="margin-bottom: 4px">> Front-end</div>
+            <div style="margin-bottom: 8px">> Loc: Chengdu, China</div>
+            <div class="profile-links">
+              <a
+                href="https://linkedin.com/in/s5s5"
+                target="_blank"
+                class="profile-btn"
+                >[ LinkedIn ]</a
+              >
+              <a
+                href="https://github.com/s5s5"
+                target="_blank"
+                class="profile-btn"
+                >[ Github ]</a
+              >
+              <a href="mailto:s5s5cn@gmail.com" class="profile-btn">[ Mail ]</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="module-header">:: CALENDAR</div>
+        <div class="cell-pad" style="padding: 10px 8px">
+          <div class="calendar-wrapper">
+            <div class="cal-nav">
+              <button class="cal-btn">&lt;</button>
+              <span style="font-weight: bold">DEC 2025</span>
+              <button class="cal-btn">&gt;</button>
+            </div>
+            <table class="cal-table">
+              <thead>
+                <tr>
+                  <td>S</td>
+                  <td>M</td>
+                  <td>T</td>
+                  <td>W</td>
+                  <td>T</td>
+                  <td>F</td>
+                  <td>S</td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td
+                    style="
+                      color: var(--text-muted);
+                      border-color: var(--container-bg);
+                    "
+                  >
+                    30
+                  </td>
+                  <td>1</td>
+                  <td>2</td>
+                  <td>3</td>
+                  <td>4</td>
+                  <td class="cal-has-post">5</td>
+                  <td>6</td>
+                </tr>
+                <tr>
+                  <td>7</td>
+                  <td>8</td>
+                  <td>9</td>
+                  <td>10</td>
+                  <td>11</td>
+                  <td class="cal-has-post">12</td>
+                  <td>13</td>
+                </tr>
+                <tr>
+                  <td>14</td>
+                  <td>15</td>
+                  <td>16</td>
+                  <td>17</td>
+                  <td>18</td>
+                  <td class="cal-has-post">19</td>
+                  <td>20</td>
+                </tr>
+                <tr>
+                  <td>21</td>
+                  <td>22</td>
+                  <td class="cal-has-post">23</td>
+                  <td>24</td>
+                  <td class="cal-has-post">25</td>
+                  <td class="cal-today">26</td>
+                  <td>27</td>
+                </tr>
+                <tr>
+                  <td>28</td>
+                  <td>29</td>
+                  <td>30</td>
+                  <td>31</td>
+                  <td
+                    style="
+                      color: var(--text-muted);
+                      border-color: var(--container-bg);
+                    "
+                  >
+                    1
+                  </td>
+                  <td
+                    style="
+                      color: var(--text-muted);
+                      border-color: var(--container-bg);
+                    "
+                  >
+                    2
+                  </td>
+                  <td
+                    style="
+                      color: var(--text-muted);
+                      border-color: var(--container-bg);
+                    "
+                  >
+                    3
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="module-header">:: LINK</div>
+        <div class="cell-pad cell-alt">
+          <div class="link-grid">
+            <div class="link-box">
+              <div class="scanlines"></div>
+              <span>YOUR_LINK</span>
+            </div>
+            <div class="link-box">
+              <div class="scanlines"></div>
+              <span>PIXEL_ART</span>
+            </div>
+            <div class="link-box">
+              <div class="scanlines"></div>
+              <span>K10K.NET</span>
+            </div>
+            <div class="link-box">
+              <div class="scanlines"></div>
+              <span>DESIGN</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- FOOTER -->
+      <footer class="layout-footer">
+        &copy; 2024-2025 [米随随] s5s5. ALL RIGHTS RESERVED. <br />
+        DESIGNED FOR HUMAN INTERACTION.
+      </footer>
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+      // --- THEME LOGIC ---
+      const themeBtn = document.getElementById("theme-toggle");
+      const htmlEl = document.documentElement;
+      // Default to system, but only set mode when button clicked
+      let currentThemeMode = localStorage.getItem("themeMode");
+
+      // Initial Setup
+      if (!currentThemeMode) {
+        const systemDark = window.matchMedia(
+          "(prefers-color-scheme: dark)"
+        ).matches;
+        currentThemeMode = systemDark ? "dark" : "light";
+      }
+
+      function applyTheme() {
+        if (currentThemeMode === "dark") {
+          htmlEl.setAttribute("data-theme", "dark");
+        } else {
+          htmlEl.removeAttribute("data-theme");
+        }
+        themeBtn.innerText = "THEME: " + currentThemeMode.toUpperCase();
+        setTimeout(redrawAllCanvases, 50);
+      }
+
+      themeBtn.addEventListener("click", () => {
+        // Toggle only between light and dark
+        currentThemeMode = currentThemeMode === "light" ? "dark" : "light";
+        localStorage.setItem("themeMode", currentThemeMode);
+        applyTheme();
+      });
+
+      function getCSSVal(name) {
+        return getComputedStyle(document.documentElement)
+          .getPropertyValue(name)
+          .trim();
+      }
+
+      // --- DATA ---
+      const posts = [
+        {
+          title: "探索数字边界",
+          date: "2024-10-25",
+          cat: "First Category",
+          weather: "Lightning",
+          excerpt:
+            "沉浸在像素完美的失落艺术中。有限的分辨率如何在现代网页设计中激发无限的想象力。"
+        },
+        {
+          title: "信息的架构",
+          date: "2024-10-24",
+          cat: "First Category",
+          weather: "Fog",
+          excerpt:
+            "构建经得起时间考验的结构。为什么网格布局不仅仅是一个CSS属性，更是一种哲学。"
+        },
+        {
+          title: "午夜编程时光",
+          date: "2024-10-23",
+          cat: "First Category",
+          weather: "Rain",
+          excerpt:
+            "凌晨3点有一种独特的寂静。唯一的声音是键盘的机械敲击声和服务器的嗡嗡声。"
+        },
+        {
+          title: "阴天随笔",
+          date: "2024-10-22",
+          cat: "Life",
+          weather: "Overcast",
+          excerpt: "一个灰色的下午，适合思考和发呆。"
+        },
+        {
+          title: "多云转晴",
+          date: "2024-10-21",
+          cat: "Design",
+          weather: "Cloudy",
+          excerpt: "云层的变化给天空带来了丰富的层次感。"
+        },
+        {
+          title: "复古游戏复兴",
+          date: "2024-10-22",
+          cat: "First Category",
+          weather: "Sunny",
+          excerpt:
+            "为什么我们不断回顾8位经典。这不仅仅是怀旧，而是关于纯粹的游戏机制。"
+        },
+        {
+          title: "Markdown 样式全功能展示",
+          date: "2024-10-20",
+          cat: "Docs",
+          weather: "Snow",
+          comments: [
+            {
+              user: "PixelFan_01",
+              date: "2024-10-21 10:00",
+              content: "这篇文章排版很棒！很有 K10k 当年的感觉。",
+              replies: [
+                {
+                  user: "s5s5",
+                  date: "2024-10-21 10:05",
+                  content: "谢谢支持！我会继续保持这种风格。",
+                  isAuthor: true
+                }
+              ]
+            },
+            {
+              user: "Guest_88",
+              date: "2024-10-22 14:20",
+              content: "代码块的配色也很舒服，是 Monokai 吗？",
+              replies: []
+            }
+          ],
+          excerpt: `
+                <h1 style="font-size:20px; font-weight:bold; margin-bottom:10px; color:var(--text-main); font-family:var(--font-stack);">一级标题示例 (H1)</h1>
+                <p style="margin-bottom:8px;">这是一篇展示常用 <strong>Markdown</strong> 语法的测试文章。包含各种标准元素的 HTML 渲染演示。</p>
+
+                <h2 style="font-size:16px; font-weight:bold; margin:15px 0 8px 0; border-bottom:1px solid var(--container-bg); padding-bottom:4px; color:var(--text-main); font-family:var(--font-stack);">1. 文本样式与排版</h2>
+                <p>我们可以使用 <strong>加粗 (Bold)</strong>，<em>斜体 (Italic)</em>，以及 <span style="text-decoration:line-through; color:var(--text-muted);">删除线 (Strike)</span>。</p>
+                <hr style="border:0; border-top:1px solid var(--container-bg); margin:10px 0;">
+                <p>链接演示：访问 <a href="#" style="color:var(--link-color)">OpenAI 官网</a> 或 <a href="#" style="color:var(--link-color)">GitHub 仓库</a>。</p>
+
+                <h2 style="font-size:16px; font-weight:bold; margin:15px 0 8px 0; border-bottom:1px solid var(--container-bg); padding-bottom:4px; color:var(--text-main); font-family:var(--font-stack);">2. 列表展示</h2>
+                <p><strong>无序列表：</strong></p>
+                <ul style="list-style-type: square; margin-left: 20px; color:var(--text-muted); margin-bottom:10px;">
+                    <li>第一点：结构化数据的重要性
+                        <ul style="list-style-type: circle; margin-left: 20px;">
+                            <li>子项 A：细节决定成败</li>
+                            <li>子项 B：保持一致性</li>
+                        </ul>
+                    </li>
+                    <li>第二点：清晰的排版提升阅读体验</li>
+                    <li>第三点：保持简洁</li>
+                </ul>
+
+                <p><strong>有序列表：</strong></p>
+                <ol style="margin-left: 20px; color:var(--text-muted); margin-bottom:10px;">
+                    <li>定义目标</li>
+                    <li>执行计划</li>
+                    <li>复盘结果</li>
+                </ol>
+
+                <h2 style="font-size:16px; font-weight:bold; margin:15px 0 8px 0; border-bottom:1px solid var(--container-bg); padding-bottom:4px; color:var(--text-main); font-family:var(--font-stack);">3. 引用块 (Blockquote)</h2>
+                <blockquote style="border-left: 4px solid var(--highlight); background:var(--cell-bg-alt); padding: 8px 12px; margin: 10px 0; color: var(--text-muted); font-style: italic;">
+                    “设计不仅是它的外观和感觉，设计就是它的运作方式。” <br>
+                    <span style="display:block; text-align:right; font-size:9px; margin-top:4px; font-family:var(--font-mono);">—— 史蒂夫·乔布斯</span>
+                </blockquote>
+
+                <h2 style="font-size:16px; font-weight:bold; margin:15px 0 8px 0; border-bottom:1px solid var(--container-bg); padding-bottom:4px; color:var(--text-main); font-family:var(--font-stack);">4. 媒体与表格</h2>
+                <p><strong>图片占位：</strong></p>
+                <div style="background:var(--cell-bg-alt); width:100%; height:100px; display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-family:var(--font-mono); margin-bottom:10px; border:1px dashed var(--container-bg);">[ IMAGE PLACEHOLDER ]</div>
+
+                <p><strong>数据表格：</strong></p>
+                <table style="width:100%; border-collapse:collapse; font-size:10px; margin-bottom:10px; font-family:var(--font-mono);">
+                    <thead>
+                        <tr style="border-bottom:1px solid var(--text-muted); background:var(--cell-bg-alt);">
+                            <th style="padding:4px; text-align:left;">ID</th>
+                            <th style="padding:4px; text-align:left;">Module</th>
+                            <th style="padding:4px; text-align:left;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-bottom:1px dotted var(--container-bg);"><td style="padding:4px;">01</td><td style="padding:4px;">Core System</td><td style="padding:4px; color:green;">Online</td></tr>
+                        <tr style="border-bottom:1px dotted var(--container-bg);"><td style="padding:4px;">02</td><td style="padding:4px;">Network</td><td style="padding:4px; color:orange;">Laggy</td></tr>
+                        <tr><td style="padding:4px;">03</td><td style="padding:4px;">Database</td><td style="padding:4px; color:red;">Offline</td></tr>
+                    </tbody>
+                </table>
+
+                <h2 style="font-size:16px; font-weight:bold; margin:15px 0 8px 0; border-bottom:1px solid var(--container-bg); padding-bottom:4px; color:var(--text-main); font-family:var(--font-stack);">5. 代码块 (Code Block)</h2>
+                <p>行内代码如 <code style="background:var(--cell-bg-alt); border:1px solid var(--container-bg); padding:1px 3px; font-family:var(--font-mono); font-size:10px; color:var(--highlight);">const x = 10;</code> 非常适合短指令。</p>
+                <div style="background:var(--cell-bg-alt); color:var(--text-main); border:1px solid var(--container-bg); padding:12px; font-family:var(--font-mono); font-size:10px; margin:10px 0; border-radius:4px; overflow-x:auto;">
+<span style="color:#cc99cd;">function</span> <span style="color:#61aeee;">initWorld</span>() {
+  <span style="color:#cc99cd;">const</span> pixel = <span style="color:#7ec699;">"Ready"</span>;
+  <span style="color:#e6c07b;">console</span>.<span style="color:#61aeee;">log</span>(<span style="color:#98c379;">\`System status: \${pixel}\`</span>);
+  <span style="color:#7a8b99;">// TODO: Load assets</span>
+}
+                </div>
+            `
+        }
+      ];
+
+      const mainArea = document.getElementById("main-content-area");
+      const weatherMap = {
+        Lightning: "闪电",
+        Fog: "雾",
+        Rain: "雨",
+        Sunny: "晴",
+        Snow: "雪",
+        Overcast: "阴",
+        Cloudy: "多云"
+      };
+
+      function renderComments(comments) {
+        if (!comments || comments.length === 0) return "";
+        return comments
+          .map(
+            (c) => `
+            <div class="comment-item">
+                <div class="comment-head">
+                    <span class="comment-user">${c.user} ${c.isAuthor ? '<span class="comment-author-badge">AUTHOR</span>' : ""}</span>
+                    <span class="comment-date">${c.date}</span>
+                </div>
+                <div class="comment-body">${c.content}</div>
+                ${c.replies && c.replies.length > 0 ? `<div class="comment-replies">${renderComments(c.replies)}</div>` : ""}
+            </div>
+        `
+          )
+          .join("");
+      }
+
+      // --- RENDER POSTS ---
+      posts.forEach((post, index) => {
+        const card = document.createElement("div");
+        card.className = "post-card";
+
+        let commentsHTML = "";
+        if (post.comments) {
+          commentsHTML = `
+                <div class="comment-section">
+                    <div class="comment-title">:: 评论列表 (${post.comments.length})</div>
+                    ${renderComments(post.comments)}
+                    <div class="comment-form">
+                        <div class="form-label">LEAVE A REPLY:</div>
+                        <textarea class="form-input" style="width:100%; margin-bottom:8px; height:60px;" placeholder="Your Message..."></textarea>
+                        <div class="form-row"><input type="text" class="form-input" placeholder="Name"><input type="email" class="form-input" placeholder="Email"></div>
+                        <div class="form-row"><input type="text" class="form-input" placeholder="Website (http://)"><button class="form-submit">SUBMIT</button></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        const canvasId = `hero-canvas-${index}`;
+        const weatherCN = weatherMap[post.weather] || "";
+        const weatherLabel = post.weather
+          ? `${weatherCN} ${post.weather.toUpperCase()}`
+          : post.cat;
+
+        card.innerHTML = `
+            <div class="post-hero">
+                <div class="post-tag">${weatherLabel}</div>
+                <canvas id="${canvasId}" class="post-canvas"></canvas>
+            </div>
+            <div class="post-content">
+                <div class="post-title">${post.title}</div>
+                <div class="post-meta">POSTED ON ${post.date} // BY s5s5 // IN ${post.cat} // 3 评论</div>
+                <div class="post-excerpt">${post.excerpt}</div>
+                <button class="btn-read">阅读全文 &gt;&gt;</button>
+            </div>
+            ${commentsHTML}
+        `;
+        mainArea.appendChild(card);
+      });
+
+      const pagination = document.createElement("div");
+      pagination.className = "pagination";
+      pagination.innerHTML = `<a href="#" class="page-btn">[PREV]</a><a href="#" class="page-btn active">1</a><a href="#" class="page-btn">2</a><a href="#" class="page-btn">3</a><span class="page-dots">...</span><a href="#" class="page-btn">[NEXT]</a>`;
+      mainArea.appendChild(pagination);
+
+      document.querySelectorAll(".nav-btn").forEach((item) => {
+        item.addEventListener("click", function () {
+          document
+            .querySelectorAll(".nav-btn")
+            .forEach((n) => n.classList.remove("active"));
+          this.classList.add("active");
+        });
+      });
+
+      // --- CANVAS LOGIC ---
+
+      function redrawAllCanvases() {
+        posts.forEach((post, index) => {
+          const canvas = document.getElementById(`hero-canvas-${index}`);
+          if (canvas) {
+            if (canvas.parentElement.offsetWidth === 0) return;
+
+            let wType = (post.weather || "Sunny").toLowerCase();
+            if (wType === "rain") wType = "rainy";
+            if (wType === "snow") wType = "snowy";
+            if (wType === "fog") wType = "foggy";
+
+            const colors = {
+              bg: getCSSVal("--canvas-bg"),
+              line: getCSSVal("--canvas-line"),
+              accent: getCSSVal("--canvas-accent")
+            };
+
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.parentElement.getBoundingClientRect();
+
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+
+            const ctx = canvas.getContext("2d");
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.scale(dpr, dpr);
+
+            // Disable smoothing for sharp pixels
+            ctx.imageSmoothingEnabled = false;
+
+            drawDinoStyleScene(ctx, rect.width, rect.height, wType, colors);
+          }
+        });
+      }
+
+      function drawDinoStyleScene(ctx, w, h, weather, colors) {
+        // Clear
+        ctx.fillStyle = colors.bg;
+        ctx.fillRect(0, 0, w, h);
+
+        // Ground Line
+        const groundY = h - 20;
+        ctx.fillStyle = colors.line;
+        ctx.fillRect(0, groundY, w, 1);
+
+        // Ground Noise
+        for (let i = 0; i < w; i += 10) {
+          if (Math.random() > 0.6) {
+            const nw = Math.random() * 4 + 1;
+            ctx.fillRect(i, groundY + 2 + Math.random() * 5, nw, 1);
+          }
+        }
+
+        // Weather & Sky
+        drawRetroWeather(ctx, w, h, weather, colors);
+
+        // Scenery
+        const numProps = 2 + Math.floor(Math.random() * 3);
+        for (let i = 0; i < numProps; i++) {
+          let px = Math.random() * w;
+          const ph = 10 + Math.random() * 15;
+          const pw = 6 + Math.random() * 6;
+          ctx.fillStyle = colors.line;
+          ctx.fillRect(px, groundY - ph, pw, ph);
+          if (Math.random() > 0.5) {
+            ctx.fillRect(px - 3, groundY - ph + 5, 3, 4);
+            ctx.fillRect(px - 3, groundY - ph + 2, 1, 3);
+          }
+        }
+
+        // Entities (1-6)
+        const entityCount = 1 + Math.floor(Math.random() * 6);
+        const types = ["human", "dog", "cat", "chicken", "bird"];
+
+        let positions = [];
+        // First entity in hero zone
+        positions.push({
+          x: w * 0.2,
+          type: types[Math.floor(Math.random() * types.length)]
+        });
+
+        for (let i = 1; i < entityCount; i++) {
+          positions.push({
+            x: Math.random() * (w - 40) + 20,
+            type: types[Math.floor(Math.random() * types.length)]
+          });
+        }
+
+        // UFOs
+        const ufoCount = 1 + Math.floor(Math.random() * 2);
+        for (let i = 0; i < ufoCount; i++) {
+          drawUFO(
+            ctx,
+            Math.random() * w,
+            Math.random() * (h * 0.3),
+            colors.line
+          );
+        }
+
+        positions.forEach((ent, i) => {
+          const isFirst = i === 0;
+          const color = isFirst ? colors.accent : colors.line;
+          drawPixelEntity(ctx, ent.x, groundY, color, ent.type);
+        });
+      }
+
+      function drawUFO(ctx, x, y, color) {
+        ctx.fillStyle = color;
+        const size = 3;
+        ctx.fillRect(x + 2 * size, y, 4 * size, 2 * size);
+        ctx.fillRect(x, y + 2 * size, 8 * size, 2 * size);
+        ctx.clearRect(x + 1 * size, y + 3 * size, size, size / 2);
+        ctx.clearRect(x + 3 * size, y + 3 * size, size, size / 2);
+        ctx.clearRect(x + 6 * size, y + 3 * size, size, size / 2);
+      }
+
+      function drawPixelEntity(ctx, x, y, color, type) {
+        const size = 3;
+        ctx.fillStyle = color;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = size;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+
+        // Helper rect
+        const r = (dx, dy, w, h) =>
+          ctx.fillRect(x + dx * size, y - dy * size, w * size, h * size);
+
+        if (type === "human") {
+          // Stick Figure
+          const pose = Math.floor(Math.random() * 3); // 0=Stand, 1=Run, 2=Run
+          const facingRight = Math.random() > 0.5;
+          const dir = facingRight ? 1 : -1;
+
+          const headCx = x + 2.5 * size;
+          const headCy = y - 11 * size;
+          const neckY = headCy + 1.5 * size;
+          const hipY = y - 5 * size;
+
+          // 1. Head (Circle)
+          ctx.beginPath();
+          ctx.arc(headCx, headCy, 1.5 * size, 0, Math.PI * 2);
+          ctx.fill();
+
+          // 2. Body (Line)
+          ctx.beginPath();
+          // If running, lean body forward
+          const lean = pose > 0 ? dir * 2 * size : 0;
+          ctx.moveTo(headCx + lean, neckY);
+          ctx.lineTo(headCx, hipY);
+          ctx.stroke();
+
+          const shoulderX = headCx + lean;
+          const shoulderY = neckY + 1 * size;
+
+          // 3. Limbs (Polylines)
+          if (pose === 0) {
+            // Standing
+            // Legs together (Single line or close)
+            ctx.beginPath();
+            ctx.moveTo(headCx, hipY);
+            ctx.lineTo(headCx, y);
+            ctx.stroke();
+
+            // Arms: One pointing
+            ctx.beginPath();
+            if (Math.random() > 0.5) {
+              // Right arm points right
+              ctx.moveTo(shoulderX, shoulderY);
+              ctx.lineTo(shoulderX + 6 * size, shoulderY);
+              // Left arm down
+              ctx.moveTo(shoulderX, shoulderY);
+              ctx.lineTo(shoulderX - 2 * size, y - 8 * size);
+            } else {
+              // Left arm points left
+              ctx.moveTo(shoulderX, shoulderY);
+              ctx.lineTo(shoulderX - 6 * size, shoulderY);
+              // Right arm down
+              ctx.moveTo(shoulderX, shoulderY);
+              ctx.lineTo(shoulderX + 2 * size, y - 8 * size);
+            }
+            ctx.stroke();
+          } else {
+            // Running (Pose 1 or 2)
+            // Legs Bent & Wide
+            ctx.beginPath();
+            // Back leg
+            ctx.moveTo(headCx, hipY);
+            ctx.lineTo(headCx - dir * 3 * size, hipY + 2 * size); // Knee back/up
+            ctx.lineTo(headCx - dir * 4 * size, y - 2 * size); // Foot back
+            // Front leg
+            ctx.moveTo(headCx, hipY);
+            ctx.lineTo(headCx + dir * 2 * size, hipY + 1 * size); // Knee fwd
+            ctx.lineTo(headCx + dir * 2 * size, y); // Foot ground
+            ctx.stroke();
+
+            // Arms Swinging
+            ctx.beginPath();
+            // Front Arm Up
+            ctx.moveTo(shoulderX, shoulderY);
+            ctx.lineTo(shoulderX + dir * 3 * size, shoulderY - 2 * size); // Elbow
+            ctx.lineTo(shoulderX + dir * 4 * size, shoulderY - 4 * size); // Hand
+            // Back Arm Down
+            ctx.moveTo(shoulderX, shoulderY);
+            ctx.lineTo(shoulderX - dir * 2 * size, shoulderY + 2 * size);
+            ctx.lineTo(shoulderX - dir * 4 * size, shoulderY);
+            ctx.stroke();
+          }
+        } else if (type === "dog") {
+          r(0, 6, 3, 3);
+          r(0, 8, 1, 2);
+          r(2, 6, 6, 3);
+          r(7, 7, 1, 2);
+          r(2, 3, 1, 3);
+          r(6, 3, 1, 3);
+        } else if (type === "cat") {
+          r(0, 6, 3, 3);
+          r(0, 8, 1, 2);
+          r(2, 8, 1, 2);
+          r(2, 5, 5, 3);
+          r(6, 6, 1, 4);
+          r(2, 2, 1, 2);
+          r(5, 2, 1, 2);
+        } else if (type === "chicken") {
+          r(0, 4, 2, 2);
+          r(1, 4, 1, 1);
+          r(0, 3, 3, 2);
+          r(1, 1, 1, 1);
+        } else if (type === "bird") {
+          const flyY = y - 40 - Math.random() * 20;
+          ctx.fillRect(x, flyY, 4 * size, 1 * size);
+          ctx.fillRect(x + 1 * size, flyY - 1 * size, 1 * size, 3 * size);
+          ctx.fillRect(x + 3 * size, flyY, 1 * size, 1 * size);
+        }
+
+        ctx.beginPath(); // Reset path
+      }
+
+      function drawRetroWeather(ctx, w, h, weather, colors) {
+        ctx.fillStyle = colors.line;
+
+        if (weather === "sunny") {
+          const sunX = w - 50;
+          const sunY = 40;
+          ctx.fillStyle = colors.accent;
+          ctx.fillRect(sunX, sunY, 12, 12);
+
+          // Rays detached (gap of 3px)
+          const gap = 4;
+          ctx.fillRect(sunX + 5, sunY - 6 - gap, 2, 3);
+          ctx.fillRect(sunX + 5, sunY + 15 + gap, 2, 3);
+          ctx.fillRect(sunX - 6 - gap, sunY + 5, 3, 2);
+          ctx.fillRect(sunX + 15 + gap, sunY + 5, 3, 2);
+
+          // Diagonals detached
+          const diagGap = 3;
+          ctx.fillRect(sunX - 3 - diagGap, sunY - 3 - diagGap, 2, 2);
+          ctx.fillRect(sunX + 13 + diagGap, sunY - 3 - diagGap, 2, 2);
+          ctx.fillRect(sunX - 3 - diagGap, sunY + 13 + diagGap, 2, 2);
+          ctx.fillRect(sunX + 13 + diagGap, sunY + 13 + diagGap, 2, 2);
+        }
+
+        if (weather === "rainy") {
+          ctx.fillStyle = colors.line;
+          for (let i = 0; i < 40; i++) {
+            const rx = Math.random() * w;
+            const ry = Math.random() * h;
+            ctx.fillRect(rx, ry, 1, 6);
+          }
+        }
+
+        if (weather === "snowy") {
+          // Use line color for snow in light mode so it's visible, or accent if needed.
+          // But usually snow is white. If bg is light, white is invisible.
+          // Let's use a light grey or the line color with opacity?
+          // Actually user requested "white snow" before, but then "canvas drawing not good".
+          // Let's use 'colors.line' but small dots for contrast, or stick to white if dark mode.
+          const isDark = colors.bg === "#202124" || colors.bg === "#111";
+          ctx.fillStyle = isDark ? "#fff" : "#ccc";
+          for (let i = 0; i < 60; i++) {
+            const sx = Math.random() * w;
+            const sy = Math.random() * h;
+            ctx.fillRect(sx, sy, 2, 2);
+          }
+        }
+
+        if (weather === "cloudy") {
+          const cloudCount = 6;
+          ctx.fillStyle = colors.line;
+          ctx.globalAlpha = 0.2;
+          for (let i = 0; i < cloudCount; i++) {
+            let cx = Math.random() * w;
+            let cy = Math.random() * (h / 2);
+            let cw = 30 + Math.random() * 20;
+            ctx.fillRect(cx, cy, cw, 10);
+            ctx.fillRect(cx + 10, cy - 8, cw - 15, 8);
+            ctx.fillRect(cx + 5, cy + 5, cw - 10, 5);
+          }
+          ctx.globalAlpha = 1.0;
+        }
+
+        if (weather === "overcast") {
+          ctx.fillStyle = colors.line;
+          ctx.globalAlpha = 0.4;
+          // Increased lines to 32 (Doubled from 16)
+          for (let i = 0; i < 32; i++) {
+            const ly = 10 + Math.random() * (h * 0.3);
+            const lx = Math.random() * w;
+            const lw = 20 + Math.random() * 60;
+            ctx.fillRect(lx, ly, lw, 2);
+          }
+          ctx.globalAlpha = 1.0;
+        }
+
+        if (weather === "lightning") {
+          ctx.strokeStyle = colors.accent;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          let lx = Math.random() * w;
+          let ly = 0;
+          ctx.moveTo(lx, ly);
+          while (ly < h - 20) {
+            lx += (Math.random() - 0.5) * 30;
+            ly += 20;
+            ctx.lineTo(lx, ly);
+          }
+          ctx.stroke();
+        }
+
+        if (weather === "foggy") {
+          ctx.fillStyle = colors.line;
+          ctx.globalAlpha = 0.1;
+          for (let x = 0; x < w; x += 4) {
+            ctx.fillRect(x, 0, 1, h);
+          }
+          ctx.globalAlpha = 1.0;
+        }
+      }
+
+      window.onload = function () {
+        applyTheme();
+      };
+
+      if (document.readyState === "complete") {
+        applyTheme();
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>[米随随] s5s5 - Pixel Portal</title>
+    <style>
+      /* --- 0. RESET & BASE --- */
+      :root {
+        --bg-color: #6a7680;
+        --border-color: #000;
+        --grid-line: #999;
+        --cell-bg: #fff;
+        --cell-bg-alt: #f1f3f5;
+        --highlight: #ffcc00; /* Classic Pixel Yellow */
+        --highlight-text: #000;
+        --text-main: #333;
+        --text-muted: #666;
+        --link-color: #4a5a6a;
+        --link-hover: #ff3300;
+        --font-stack: "Verdana", "Geneva", sans-serif;
+        --font-mono: "Courier New", monospace;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background-color: var(--bg-color);
+        background-image: radial-gradient(#5a6670 1px, transparent 1px);
+        background-size: 4px 4px;
+        font-family: var(--font-stack);
+        font-size: 11px; /* 稍微调大一点点以适应中文阅读 */
+        color: var(--text-main);
+        line-height: 1.5;
+        padding: 20px 0;
+        -webkit-font-smoothing: none;
+      }
+
+      /* --- 1. UTILITIES --- */
+      .text-mono {
+        font-family: var(--font-mono);
+        font-size: 10px;
+      }
+      .upper {
+        text-transform: uppercase;
+      }
+      .bold {
+        font-weight: bold;
+      }
+      .flex {
+        display: flex;
+      }
+      .j-between {
+        justify-content: space-between;
+      }
+      .a-center {
+        align-items: center;
+      }
+      .pixel-border {
+        border: 1px solid #000;
+      }
+
+      a {
+        text-decoration: none;
+        color: var(--link-color);
+        transition: none;
+      }
+      a:hover {
+        color: var(--link-hover);
+        background: #eee;
+      }
+
+      /* --- 2. LAYOUT (Responsive Grid) --- */
+      .container {
+        width: 100%;
+        max-width: 960px; /* 增加一点宽度 */
+        margin: 0 auto;
+        background-color: var(--grid-line);
+        border: 1px solid #000;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+
+        display: grid;
+        /* 经典三栏: 侧边 | 内容 | 侧边 */
+        grid-template-columns: 160px 1fr 200px;
+        gap: 1px;
+      }
+
+      .cell {
+        background-color: var(--cell-bg);
+        overflow: hidden;
+      }
+      .cell-pad {
+        padding: 12px;
+      }
+      .cell-alt {
+        background-color: var(--cell-bg-alt);
+      }
+
+      .cell-header {
+        background: #e0e0e0;
+        background-image: linear-gradient(to bottom, #fff, #ddd);
+        padding: 6px 8px;
+        font-size: 10px;
+        font-weight: bold;
+        color: #555;
+        text-transform: uppercase;
+        border-bottom: 1px solid #ccc;
+        letter-spacing: 1px;
+      }
+
+      /* --- 3. RESPONSIVE MEDIA QUERIES --- */
+      @media (max-width: 800px) {
+        body {
+          padding: 0;
+        }
+        .container {
+          border: none;
+          box-shadow: none;
+          grid-template-columns: 1fr; /* 变为单列 */
+          gap: 1px;
+        }
+        /* 重排顺序：Header -> Nav -> Content -> Sidebar L -> Sidebar R -> Footer */
+        .header-row {
+          order: 1;
+        }
+        .main-nav-bar {
+          order: 2;
+          grid-column: 1 / -1 !important;
+        }
+        main.cell {
+          order: 3;
+        }
+        .sidebar-l {
+          order: 4;
+        }
+        .sidebar-r {
+          order: 5;
+        }
+        .footer-row {
+          order: 6;
+        }
+
+        /* 手机端隐藏部分装饰或调整间距 */
+        .site-area {
+          position: static !important;
+          padding: 15px;
+          text-align: center;
+        }
+        .header-bg-deco {
+          display: none;
+        }
+      }
+
+      /* --- 4. HEADER STYLES --- */
+      .header-row {
+        grid-column: 1 / -1;
+        background-color: #fff;
+        min-height: 100px;
+        position: relative;
+        /* 复合背景底纹 */
+        background-image:
+          linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+        background-size: 10px 10px;
+        border-bottom: 1px solid #000;
+      }
+
+      /* 顶部装饰条 */
+      .header-top-stripe {
+        height: 4px;
+        background: repeating-linear-gradient(
+          45deg,
+          #333,
+          #333 5px,
+          var(--highlight) 5px,
+          var(--highlight) 10px
+        );
+        border-bottom: 1px solid #000;
+      }
+
+      .site-area {
+        padding: 20px 20px 10px 20px;
+      }
+
+      .site-title {
+        font-family: "Arial Black", "Impact", sans-serif;
+        font-size: 32px;
+        color: #000;
+        line-height: 1;
+        letter-spacing: -1px;
+        text-transform: uppercase;
+      }
+
+      .site-description {
+        font-size: 11px;
+        color: #555;
+        font-family: var(--font-mono);
+        margin-top: 5px;
+        background: #eee;
+        display: inline-block;
+        padding: 2px 5px;
+        border: 1px dotted #999;
+      }
+
+      /* --- 5. NEW NAVIGATION (Prominent) --- */
+      .main-nav-bar {
+        grid-column: 1 / -1; /* 占据一整行 */
+        background: #333;
+        border-bottom: 1px solid #000;
+        display: flex;
+        align-items: stretch;
+        height: 36px;
+      }
+
+      .nav-item {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #444;
+        color: #ccc;
+        font-weight: bold;
+        font-size: 11px;
+        text-transform: uppercase;
+        border-right: 1px solid #222;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.1s;
+      }
+
+      .nav-item:hover,
+      .nav-item.active {
+        background: var(--highlight);
+        color: #000;
+      }
+
+      /* 选中状态的小三角 */
+      .nav-item.active::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-bottom: 5px solid #fff; /* 指向白色内容区 */
+      }
+
+      /* --- 6. CONTENT STYLES (Hero Posts) --- */
+      .post-card {
+        border-bottom: 4px double #ccc;
+        margin-bottom: 0;
+        background: #fff;
+      }
+      .post-card:last-child {
+        border-bottom: none;
+      }
+
+      .post-hero-img-box {
+        width: 100%;
+        height: 240px; /* 大图高度 */
+        overflow: hidden;
+        position: relative;
+        background: #000;
+        border-bottom: 1px solid #000;
+      }
+
+      .post-hero-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.9;
+        transition:
+          transform 0.4s,
+          opacity 0.4s;
+      }
+
+      .post-card:hover .post-hero-img {
+        transform: scale(1.05);
+        opacity: 1;
+      }
+
+      .post-overlay-cat {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: #000;
+        color: var(--highlight);
+        padding: 2px 6px;
+        font-size: 9px;
+        font-family: var(--font-mono);
+        border: 1px solid #fff;
+        z-index: 2;
+      }
+
+      .post-body {
+        padding: 20px;
+      }
+
+      .post-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #000;
+        margin-bottom: 8px;
+        line-height: 1.3;
+      }
+
+      .post-meta {
+        font-size: 10px;
+        color: #999;
+        font-family: var(--font-mono);
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px dotted #ccc;
+      }
+
+      .post-excerpt {
+        color: #555;
+        line-height: 1.6;
+        margin-bottom: 15px;
+      }
+
+      .btn-read {
+        display: inline-block;
+        background: #fff;
+        border: 1px solid #000;
+        color: #000;
+        padding: 4px 10px;
+        font-size: 10px;
+        font-weight: bold;
+        box-shadow: 2px 2px 0 #ccc;
+        cursor: pointer;
+      }
+      .btn-read:hover {
+        background: var(--highlight);
+        box-shadow: 2px 2px 0 #000;
+        transform: translate(-1px, -1px);
+      }
+
+      /* Sidebar Links */
+      .menu-link {
+        display: block;
+        padding: 6px 10px;
+        border-bottom: 1px solid #eee;
+        color: #555;
+      }
+      .menu-link:hover {
+        background: #333;
+        color: #fff;
+      }
+
+      /* Footer */
+      .footer-row {
+        grid-column: 1 / -1;
+        background: #222;
+        color: #777;
+        padding: 20px;
+        text-align: center;
+        border-top: 1px solid #000;
+        font-family: var(--font-mono);
+        font-size: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- HEADER -->
+      <header class="header-row">
+        <!-- 顶部条纹底纹 -->
+        <div class="header-top-stripe"></div>
+
+        <div class="logo-area">
+          <div class="logo-main">
+            [米随随]
+            <span
+              style="color: var(--highlight); background: #000; padding: 0 5px"
+              >s5s5</span
+            >
+          </div>
+          <div class="logo-sub">
+            // 本站是基于人类交互的，您的想象决定了我们的应用！
+          </div>
+        </div>
+
+        <!-- 装饰性的像素点阵 -->
+        <div
+          class="header-bg-deco"
+          style="
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 60px;
+            height: 60px;
+            background-image: radial-gradient(#ccc 2px, transparent 2px);
+            background-size: 6px 6px;
+          "
+        ></div>
+      </header>
+
+      <!-- PROMINENT NAVIGATION BAR -->
+      <nav class="main-nav-bar">
+        <div class="nav-item active">Home</div>
+        <div class="nav-item">First Category</div>
+        <div class="nav-item">Other</div>
+        <div class="nav-item">About Me</div>
+      </nav>
+
+      <!-- LEFT SIDEBAR -->
+      <aside class="cell sidebar-l">
+        <div class="cell-header">:: MENU</div>
+        <div>
+          <a href="#" class="menu-link">&gt; Latest Posts</a>
+          <a href="#" class="menu-link">&gt; Popular</a>
+          <a href="#" class="menu-link">&gt; Archives</a>
+          <a href="#" class="menu-link">&gt; RSS Feed</a>
+        </div>
+
+        <div class="cell-header" style="margin-top: 1px">:: TAGS</div>
+        <div class="cell-pad text-mono" style="line-height: 1.8; color: #666">
+          [Design] [Code]<br />
+          [Life] [Pixel]<br />
+          [Retro] [Art]
+        </div>
+      </aside>
+
+      <!-- CENTER MAIN CONTENT -->
+      <main class="cell" id="main-content-area">
+        <!-- JS will render Hero Posts here -->
+      </main>
+
+      <!-- RIGHT SIDEBAR -->
+      <aside class="cell sidebar-r">
+        <div class="cell-header">:: STATUS</div>
+        <div class="cell-pad cell-alt text-mono" style="font-size: 9px">
+          <div>LOCATION: EARTH</div>
+          <div>MOOD: CREATIVE</div>
+          <div>MUSIC: ON</div>
+          <div
+            style="
+              margin-top: 5px;
+              height: 6px;
+              background: #ccc;
+              border: 1px solid #999;
+            "
+          >
+            <div
+              style="width: 70%; height: 100%; background: var(--highlight)"
+            ></div>
+          </div>
+        </div>
+
+        <div class="cell-header" style="margin-top: 1px">:: SHOUTBOX</div>
+        <div
+          class="cell-pad"
+          style="
+            height: 150px;
+            overflow-y: auto;
+            font-family: var(--font-mono);
+            font-size: 10px;
+          "
+        >
+          <div
+            style="
+              margin-bottom: 6px;
+              border-bottom: 1px dotted #ccc;
+              padding-bottom: 4px;
+            "
+          >
+            <span class="bold" style="color: #000">User_01:</span> Nice layout!
+          </div>
+          <div
+            style="
+              margin-bottom: 6px;
+              border-bottom: 1px dotted #ccc;
+              padding-bottom: 4px;
+            "
+          >
+            <span class="bold" style="color: #000">Guest:</span> Love the
+            yellow.
+          </div>
+          <div
+            style="
+              margin-bottom: 6px;
+              border-bottom: 1px dotted #ccc;
+              padding-bottom: 4px;
+            "
+          >
+            <span class="bold" style="color: #000">Admin:</span> Welcome back.
+          </div>
+        </div>
+
+        <div
+          class="cell-pad"
+          style="border-top: 1px solid #ccc; background: #eee"
+        >
+          <button
+            style="
+              width: 100%;
+              background: #fff;
+              border: 1px solid #999;
+              padding: 4px;
+              cursor: pointer;
+              font-size: 9px;
+            "
+            onmouseover="
+              this.style.background = '#000';
+              this.style.color = '#fff';
+            "
+            onmouseout="
+              this.style.background = '#fff';
+              this.style.color = '#000';
+            "
+          >
+            LEAVE MESSAGE
+          </button>
+        </div>
+      </aside>
+
+      <!-- FOOTER -->
+      <footer class="footer-row">
+        &copy; 2024-2025 [米随随] s5s5. ALL RIGHTS RESERVED. <br />
+        DESIGNED FOR HUMAN INTERACTION.
+      </footer>
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+      const posts = [
+        {
+          title: "Exploring the Digital Frontier",
+          date: "2024-10-25",
+          cat: "FEATURE",
+          img: "https://images.unsplash.com/photo-1518544806308-c8f325cc59bf?auto=format&fit=crop&w=800&q=80",
+          excerpt:
+            "Immersing ourselves in the lost art of pixel perfection. How limited resolution sparks infinite imagination in modern web design."
+        },
+        {
+          title: "The Architecture of Information",
+          date: "2024-10-24",
+          cat: "DESIGN",
+          img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80",
+          excerpt:
+            "Building structures that stand the test of time. Why grid layouts are more than just a CSS property, they are a philosophy."
+        },
+        {
+          title: "Midnight Coding Sessions",
+          date: "2024-10-23",
+          cat: "LIFE",
+          img: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80",
+          excerpt:
+            "There is a unique silence at 3 AM. The only sound is the mechanical clack of the keyboard and the hum of the server."
+        },
+        {
+          title: "Retro Gaming Revival",
+          date: "2024-10-22",
+          cat: "GAME",
+          img: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=800&q=80",
+          excerpt:
+            "Why we keep going back to 8-bit classics. It's not just nostalgia; it's about pure gameplay mechanics."
+        }
+      ];
+
+      const mainArea = document.getElementById("main-content-area");
+
+      posts.forEach((post) => {
+        const card = document.createElement("div");
+        card.className = "post-card";
+        card.innerHTML = `
+            <div class="post-hero-img-box">
+                <div class="post-overlay-cat">${post.cat}</div>
+                <img src="${post.img}" class="post-hero-img" alt="${post.title}">
+            </div>
+            <div class="post-body">
+                <div class="post-title">${post.title}</div>
+                <div class="post-meta">
+                    POSTED ON ${post.date} // BY ADMIN // 3 COMMENTS
+                </div>
+                <div class="post-excerpt">
+                    ${post.excerpt}
+                </div>
+                <button class="btn-read">READ FULL STORY &gt;&gt;</button>
+            </div>
+        `;
+        mainArea.appendChild(card);
+      });
+
+      // Navigation Logic
+      const navItems = document.querySelectorAll(".nav-item");
+      navItems.forEach((item) => {
+        item.addEventListener("click", function () {
+          navItems.forEach((n) => n.classList.remove("active"));
+          this.classList.add("active");
+        });
+      });
+    </script>
+  </body>
+</html>

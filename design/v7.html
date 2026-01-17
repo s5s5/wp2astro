@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[米随随] s5s5 // THEME_SYNC_V1</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap');
+
+        /* 主题变量定义 */
+        :root {
+            /* 默认暗色模式变量 */
+            --bg-dark: #0a0a0a;
+            --bg-mid: #1a1b1e;
+            --accent: #00bac4;
+            --ink-black: #050505;
+            --text-dim: #666;
+            --text-main: #b0b0b0;
+            --text-title: #ffffff;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-light: rgba(255, 255, 255, 0.04);
+            --shadow: #000;
+            --grid-color: rgba(255, 255, 255, 0.01);
+            --content-grid: rgba(255, 255, 255, 0.02);
+        }
+
+        /* 亮色模式变量 */
+        [data-theme="light"] {
+            --bg-dark: #e8e8e8;
+            --bg-mid: #ffffff;
+            --accent: #008b8b;
+            --ink-black: #f9f9f9;
+            --text-dim: #999;
+            --text-main: #444;
+            --text-title: #000;
+            --border: rgba(0, 0, 0, 0.1);
+            --border-light: rgba(0, 0, 0, 0.05);
+            --shadow: rgba(0, 0, 0, 0.1);
+            --grid-color: rgba(0, 0, 0, 0.03);
+            --content-grid: rgba(0, 0, 0, 0.01);
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'JetBrains+Mono', monospace;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            font-size: 12px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            background-image:
+                    linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+                    linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .top-nav {
+            height: 60px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            justify-content: space-between;
+            background: var(--bg-dark);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            transition: background-color 0.3s ease;
+        }
+
+        .nav-link {
+            padding: 0 15px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            text-decoration: none;
+            transition: color 0.2s;
+            font-size: 11px;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--accent);
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 200px 1fr 300px;
+            gap: 0;
+            flex: 1;
+            max-width: 1440px;
+            margin: 0 auto;
+            width: 100%;
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+        }
+
+        .column {
+            padding: 30px;
+        }
+
+        .sidebar-left, .sidebar-right {
+            background: var(--bg-dark);
+        }
+
+        .main-content {
+            background: var(--bg-mid);
+            color: var(--text-main);
+            position: relative;
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+        }
+
+        .main-content::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image:
+                    linear-gradient(to right, var(--content-grid) 1px, transparent 1px),
+                    linear-gradient(to bottom, var(--content-grid) 1px, transparent 1px);
+            background-size: 20px 20px;
+            pointer-events: none;
+        }
+
+        .post-card {
+            margin-bottom: 80px;
+            border-left: 1px solid var(--text-dim);
+            padding-left: 25px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .post-card:hover {
+            border-left-color: var(--accent);
+        }
+
+        .post-meta {
+            font-size: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+        }
+
+        .post-meta span.symbol {
+            color: var(--accent);
+            opacity: 0.7;
+            margin-right: 4px;
+        }
+
+        .post-title {
+            font-size: 22px;
+            font-weight: 400;
+            margin-bottom: 15px;
+            color: var(--text-title);
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+
+        .post-art-preview {
+            width: 100%;
+            height: 280px;
+            background: var(--ink-black);
+            border: 1px solid var(--border);
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 16px 16px 0px var(--shadow);
+            transition: box-shadow 0.3s ease, background-color 0.3s ease;
+        }
+
+        .markdown-body h3 { color: var(--text-title); font-size: 16px; margin: 25px 0 15px 0; border-bottom: 1px solid var(--border-light); padding-bottom: 5px; }
+        .markdown-body p { margin-bottom: 15px; }
+        .markdown-body blockquote { border-left: 3px solid var(--accent); padding: 10px 20px; background: rgba(128,128,128,0.05); font-style: italic; margin: 20px 0; }
+        .markdown-body code { background: var(--bg-dark); padding: 2px 5px; color: var(--accent); font-size: 11px; }
+
+        .comment-section { margin-top: 60px; padding-top: 40px; border-top: 1px solid var(--border-light); }
+        .comment-header { font-size: 14px; color: var(--text-title); margin-bottom: 30px; display: flex; gap: 10px; }
+        .comment-item { margin-bottom: 25px; }
+        .comment-body { background: rgba(128,128,128,0.05); border: 1px solid var(--border-light); padding: 15px; font-size: 11px; color: var(--text-main); }
+        .comment-meta { display: flex; gap: 15px; font-size: 9px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; }
+
+        .comment-form { margin-top: 40px; background: rgba(0, 0, 0, 0.05); border: 1px solid var(--border); padding: 20px; }
+        [data-theme="dark"] .comment-form { background: rgba(0, 0, 0, 0.2); }
+
+        .form-input, .comment-textarea { background: var(--bg-dark); border: 1px solid var(--border); color: var(--text-main); padding: 8px 12px; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+        .comment-textarea { width: 100%; min-height: 100px; margin-bottom: 15px; resize: vertical; }
+        .submit-btn { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 8px 25px; font-size: 10px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+        .submit-btn:hover { background: var(--accent); color: #fff; }
+        [data-theme="dark"] .submit-btn:hover { color: #000; }
+
+        canvas { image-rendering: pixelated; display: block; }
+
+        .pagination { display: flex; align-items: center; gap: 10px; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border-light); font-size: 10px; }
+        .page-btn { border: 1px solid var(--border); padding: 4px 10px; color: var(--text-dim); cursor: pointer; }
+        .page-btn.active { border-color: var(--accent); color: var(--accent); }
+
+        .profile-section { margin-bottom: 30px; border: 1px solid var(--border); padding: 20px; background: rgba(128,128,128,0.05); }
+        .logo-placeholder { width: 60px; height: 60px; border: 1px solid var(--accent); margin-bottom: 15px; display: flex; align-items: center; justify-content: center; position: relative; }
+        .logo-placeholder::after { content: "XL"; font-weight: 700; color: var(--accent); font-size: 24px; }
+
+        .calendar-container { background: rgba(128,128,128,0.05); border: 1px solid var(--border); padding: 15px; margin-bottom: 30px; }
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 10px; }
+        .calendar-nav-btn { cursor: pointer; color: var(--accent); font-size: 10px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+        .calendar-day { font-size: 10px; padding: 5px 0; color: var(--text-dim); }
+        .calendar-day.active { color: var(--text-main); }
+        .calendar-day.today { background: var(--accent); color: #fff; font-weight: bold; }
+
+        .stat-label { color: var(--text-title); border-bottom: 1px solid var(--border); margin-bottom: 12px; padding-bottom: 4px; font-size: 10px; text-transform: uppercase; }
+        footer { background: var(--bg-dark); border-top: 1px solid var(--border); padding: 20px; text-align: center; font-size: 9px; color: var(--text-dim); transition: background-color 0.3s ease; }
+
+        /* 主题切换按钮 */
+        .theme-toggle {
+            cursor: pointer;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            padding: 4px 8px;
+            font-size: 9px;
+            margin-left: 20px;
+            text-transform: uppercase;
+        }
+        .theme-toggle:hover {
+            background: var(--accent);
+            color: var(--bg-dark);
+        }
+
+        @media (max-width: 1100px) { .main-layout { grid-template-columns: 1fr 300px; } .sidebar-left { display: none; } }
+        @media (max-width: 850px) { .main-layout { grid-template-columns: 1fr; } .sidebar-right { display: none; } }
+    </style>
+</head>
+<body data-theme="dark">
+
+<div class="bg-grid"></div>
+
+<header class="top-nav">
+    <div class="flex flex-col">
+        <div class="font-bold tracking-tighter text-white text-base" style="color: var(--text-title);">
+            [米随随] s5s5 <span class="text-dim opacity-50 font-light text-[10px] ml-2 tracking-widest">// DUAL_THEME.V1</span>
+        </div>
+        <div class="text-[9px] text-accent opacity-60 tracking-[0.2em] hidden sm:block mt-0.5">
+            本站是基于人类交互的，您的想象决定了我们的应用！
+        </div>
+    </div>
+    <div class="flex items-center">
+        <nav class="flex">
+            <a href="#" class="nav-link active">Home</a>
+            <a href="#" class="nav-link">First Category</a>
+            <a href="#" class="nav-link">Other</a>
+            <a href="#" class="nav-link">About Me</a>
+        </nav>
+        <!-- 主题切换按钮 -->
+        <div class="theme-toggle" id="themeToggle" onclick="toggleTheme()">[MODE: DARK]</div>
+    </div>
+</header>
+
+<div class="main-layout">
+    <aside class="column sidebar-left">
+        <h3 class="stat-label">Environment_Codes</h3>
+        <a href="#" class="category-item block py-1 text-dim hover:text-accent">01. SUNNY_MIN</a>
+        <a href="#" class="category-item block py-1 text-dim hover:text-accent">02. OVERCAST_MIN</a>
+        <a href="#" class="category-item block py-1 text-dim hover:text-accent">03. CLOUDY_MIN</a>
+        <a href="#" class="category-item block py-1 text-dim hover:text-accent">04. RAINY_MIN</a>
+        <a href="#" class="category-item block py-1 text-dim hover:text-accent">05. SNOWY_MIN</a>
+        <a href="#" class="category-item block py-1 text-dim hover:text-accent">06. FOGGY_MIN</a>
+
+        <div class="mt-20">
+            <div class="text-[8px] text-dim mb-2 uppercase">Flow Stability</div>
+            <div class="w-full bg-white/5 h-1">
+                <div class="bg-accent h-full w-3/4"></div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="column main-content">
+        <!-- 文章 1 -->
+        <article class="post-card">
+            <div class="post-meta">
+                <div><span class="symbol">//</span><a href="#">s5s5</a></div>
+                <div><span class="symbol">[</span><span>2024-05-16</span><span class="symbol">]</span></div>
+                <div><span class="symbol">></span><a href="#" class="underline">First Category</a></div>
+                <div><span class="symbol">::</span><a href="#">留下评论</a></div>
+            </div>
+            <h2 class="post-title">娃儿班上的家长把班主任气走了</h2>
+            <div class="post-art-preview">
+                <canvas class="art-canvas" data-weather="rainy"></canvas>
+                <div class="absolute top-2 left-2 bg-black/50 text-white border border-white/20 px-2 py-0.5 text-[8px]" style="background-color: var(--bg-dark); color: var(--text-title);">LOG.VOID_WATERFALL</div>
+            </div>
+            <div class="post-content">
+                <p>沟通的错位和情绪的堆叠。我们都是在暴雨中独自前行的火柴人，撑着脆弱的逻辑之伞。</p>
+            </div>
+            <a href="#" class="page-btn text-[10px] uppercase mt-4 inline-block px-4 py-1">Read Entry</a>
+        </article>
+
+        <!-- 长文章 -->
+        <article class="post-card" id="long-post">
+            <div class="post-meta">
+                <div><span class="symbol">//</span><a href="#">s5s5</a></div>
+                <div><span class="symbol">[</span><span>2024-05-16</span><span class="symbol">]</span></div>
+                <div><span class="symbol">></span><a href="#" class="underline">First Category</a></div>
+                <div><span class="symbol">::</span><a href="#">留下评论</a></div>
+            </div>
+            <h2 class="post-title">计算美学：极简生命与宏大自然</h2>
+            <div class="post-art-preview">
+                <canvas class="art-canvas" data-weather="sunny"></canvas>
+                <div class="absolute top-2 left-2 bg-black/50 text-accent border border-accent/30 px-2 py-0.5 text-[8px]" style="background-color: var(--bg-dark);">LAB.LIFE_MINIMAL</div>
+            </div>
+            <div class="post-content markdown-body">
+                <p>在数字媒介中，我们通过减少观察者的数量来增强被观察客体的存在感。</p>
+                <ul>
+                    <li><strong>孤独的张力</strong>：一个独处的火柴人比一群人更能引发情感共鸣。</li>
+                    <li><strong>比例的对比</strong>：微小的生命在宏大的算法瀑布面前展示了存在的脆弱与坚韧。</li>
+                </ul>
+                <section class="comment-section">
+                    <div class="comment-header"><span class="text-accent">//</span> COMMENTS (01)</div>
+                    <div class="comment-item">
+                        <div class="comment-meta"><span class="author"><a href="#">// ArtSeeker_01</a></span><span>> 2024-05-17 10:22</span></div>
+                        <div class="comment-body">现在的画面更清澈了，那个在山巅独自欢呼的小人非常有生命力。</div>
+                    </div>
+
+                    <div class="comment-form">
+                        <div class="form-title">// Post a Comment</div>
+                        <textarea class="comment-textarea" placeholder="Enter your thoughts here..."></textarea>
+                        <div class="flex flex-col gap-3">
+                            <div class="grid grid-cols-2 gap-3">
+                                <input type="text" class="form-input" placeholder="Name">
+                                <input type="text" class="form-input" placeholder="Email (optional)">
+                            </div>
+                            <div class="grid grid-cols-[1fr_auto] gap-3">
+                                <input type="text" class="form-input" placeholder="Website (optional)">
+                                <button class="submit-btn">Execute Post</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <a href="#" class="page-btn text-[10px] uppercase mt-4 inline-block px-4 py-1">End of Log</a>
+        </article>
+
+        <div class="pagination">
+            <div class="page-btn">[PREV]</div>
+            <div class="page-btn active">1</div>
+            <div class="page-btn">2</div>
+            <div class="opacity-20">...</div>
+            <div class="page-btn">[NEXT]</div>
+        </div>
+    </main>
+
+    <aside class="column sidebar-right">
+        <div class="stat-label">Identification</div>
+        <div class="profile-section">
+            <div class="logo-placeholder">
+                <div class="absolute -top-1 -left-1 w-2 h-2 border-t border-l border-cyan-400"></div>
+                <div class="absolute -bottom-1 -right-1 w-2 h-2 border-b border-r border-cyan-400"></div>
+            </div>
+            <div class="text-white text-lg font-bold tracking-tighter mb-1" style="color: var(--text-title);">Xiaochao Liu</div>
+            <div class="text-cyan-400 text-[10px] uppercase tracking-widest mb-4">Front-end</div>
+            <div class="space-y-2 mt-4 text-[10px]">
+                <div class="flex items-center gap-2 text-dim"><span class="w-12">Loc:</span><span style="color: var(--text-main);">Chengdu, China</span></div>
+                <div class="flex items-center gap-2 text-dim"><span class="w-12">Git:</span><a href="#" class="underline" style="color: var(--text-main);">github.com/s5s5</a></div>
+                <div class="flex items-center gap-2 text-dim"><span class="w-12">Mail:</span><a href="#" class="underline" style="color: var(--text-main);">s5s5cn@gmail.com</a></div>
+            </div>
+        </div>
+
+        <div class="stat-label">Calendar</div>
+        <div class="calendar-container">
+            <div class="calendar-header">
+                <div class="calendar-nav-btn" id="prevMonth">[&lt;]</div>
+                <div class="calendar-title" id="calDisplay">// LOADING...</div>
+                <div class="calendar-nav-btn" id="nextMonth">[&gt;]</div>
+            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+        </div>
+
+        <div class="stat-box">
+            <h4 class="stat-label">Terminal</h4>
+            <div class="bg-black p-3 text-[9px] font-light border border-white/5 opacity-60" style="background: var(--ink-black); border-color: var(--border);">
+                <div class="text-cyan-400">> theme_engine.sync()</div>
+                <div id="themeStatus" class="text-white">Status: DARK_ACTIVE</div>
+                <div class="text-dim">Watching system preferences...</div>
+            </div>
+        </div>
+    </aside>
+</div>
+
+<footer>©️ 2025 [米随随] s5s5. All rights reserved. 蜀ICP备16014041号-1</footer>
+
+<script>
+  // --- 主题管理逻辑 ---
+  let currentTheme = 'dark';
+
+  function initTheme() {
+    // 检测系统偏好
+    const userPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = userPrefersDark ? 'dark' : 'light';
+    setTheme(theme);
+
+    // 监听系统主题变化
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+      setTheme(e.matches ? 'dark' : 'light');
+    });
+  }
+
+  function setTheme(theme) {
+    currentTheme = theme;
+    document.body.setAttribute('data-theme', theme);
+    document.getElementById('themeToggle').innerText = `[MODE: ${theme.toUpperCase()}]`;
+    document.getElementById('themeStatus').innerText = `Status: ${theme.toUpperCase()}_ACTIVE`;
+
+    // 每次切换主题重绘插图
+    initArt();
+  }
+
+  function toggleTheme() {
+    setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+  }
+
+  // --- 原有逻辑保留 ---
+  let viewDate = new Date();
+  const monthNames = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
+
+  function buildCalendar() {
+    const grid = document.getElementById('calendarGrid');
+    const display = document.getElementById('calDisplay');
+    grid.innerHTML = '';
+    const year = viewDate.getFullYear();
+    const month = viewDate.getMonth();
+    const today = new Date();
+    display.innerText = `// ${monthNames[month]} ${year}`;
+    ['S', 'M', 'T', 'W', 'T', 'F', 'S'].forEach(d => {
+      const el = document.createElement('div'); el.className = 'calendar-day opacity-30'; el.innerText = d; grid.appendChild(el);
+    });
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    for (let i = 0; i < firstDay; i++) grid.appendChild(document.createElement('div'));
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dayEl = document.createElement('div');
+      dayEl.className = 'calendar-day active';
+      if (d === today.getDate() && month === today.getMonth() && year === today.getFullYear()) dayEl.classList.add('today');
+      dayEl.innerText = d; grid.appendChild(dayEl);
+    }
+  }
+
+  function initCalendarNav() {
+    document.getElementById('prevMonth').onclick = () => { viewDate.setMonth(viewDate.getMonth() - 1); buildCalendar(); };
+    document.getElementById('nextMonth').onclick = () => { viewDate.setMonth(viewDate.getMonth() + 1); buildCalendar(); };
+  }
+
+  function drawStickPersonEx(ctx, x, y, scale, weather) {
+    ctx.save();
+    // 根据主题改变火柴人颜色
+    ctx.strokeStyle = currentTheme === 'dark' ? '#fff' : '#000';
+    ctx.lineWidth = 1.2 * scale;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+
+    const poseType = Math.floor(Math.random() * 3);
+    if (weather === 'rainy' || weather === 'snowy') {
+      if (poseType === 0) {
+        ctx.arc(x - 5*scale, y - 10*scale, 3*scale, 0, Math.PI*2);
+        ctx.moveTo(x-5*scale, y-7*scale); ctx.lineTo(x-10*scale, y+2*scale);
+        ctx.moveTo(x-8*scale, y-3*scale); ctx.lineTo(x+10*scale, y-12*scale);
+        ctx.moveTo(x+10*scale, y-12*scale); ctx.lineTo(x+15*scale, y-25*scale);
+        ctx.moveTo(x+5*scale, y-25*scale); ctx.lineTo(x+25*scale, y-25*scale);
+      } else if (poseType === 1) {
+        ctx.arc(x + 5*scale, y - 10*scale, 3*scale, 0, Math.PI*2);
+        ctx.moveTo(x+5*scale, y-7*scale); ctx.lineTo(x, y+2*scale);
+        ctx.moveTo(x, y+2*scale); ctx.lineTo(x+10*scale, y+8*scale);
+        ctx.moveTo(x, y+2*scale); ctx.lineTo(x-10*scale, y+5*scale);
+        ctx.moveTo(x+3*scale, y-3*scale); ctx.lineTo(x-5*scale, y-12*scale);
+      } else {
+        ctx.arc(x, y - 5*scale, 3*scale, 0, Math.PI*2);
+        ctx.moveTo(x, y-2*scale); ctx.lineTo(x-15*scale, y-8*scale);
+        ctx.moveTo(x-15*scale, y-8*scale); ctx.lineTo(x-20*scale, y+10*scale);
+        ctx.moveTo(x-15*scale, y-8*scale); ctx.lineTo(x+10*scale, y+5*scale);
+      }
+    } else if (weather === 'sunny') {
+      if (poseType === 0) {
+        ctx.arc(x, y - 18*scale, 3*scale, 0, Math.PI*2);
+        ctx.moveTo(x, y-15*scale); ctx.lineTo(x, y-5*scale);
+        ctx.moveTo(x, y-12*scale); ctx.lineTo(x-10*scale, y-20*scale);
+        ctx.moveTo(x, y-12*scale); ctx.lineTo(x+10*scale, y-20*scale);
+        ctx.moveTo(x, y-5*scale); ctx.lineTo(x-6*scale, y+5*scale);
+        ctx.moveTo(x, y-5*scale); ctx.lineTo(x+6*scale, y+5*scale);
+      } else if (poseType === 1) {
+        ctx.arc(x, y + 10*scale, 3*scale, 0, Math.PI*2);
+        ctx.moveTo(x, y+7*scale); ctx.lineTo(x, y-3*scale);
+        ctx.moveTo(x, y+2*scale); ctx.lineTo(x-8*scale, y+12*scale);
+        ctx.moveTo(x, y+2*scale); ctx.lineTo(x+8*scale, y+12*scale);
+        ctx.moveTo(x, y-3*scale); ctx.lineTo(x-5*scale, y-15*scale);
+      } else {
+        ctx.arc(x, y - 10*scale, 3*scale, 0, Math.PI*2);
+        ctx.moveTo(x, y-7*scale); ctx.lineTo(x, y+2*scale);
+        ctx.moveTo(x, y-4*scale); ctx.lineTo(x+12*scale, y-8*scale);
+        ctx.moveTo(x, y+2*scale); ctx.lineTo(x-10*scale, y+12*scale);
+      }
+    } else {
+      if (poseType === 0) {
+        ctx.arc(x, y - 8*scale, 3*scale, 0, Math.PI*2);
+        ctx.moveTo(x, y-5*scale); ctx.lineTo(x, y+2*scale);
+        ctx.moveTo(x, y-3*scale); ctx.lineTo(x+6*scale, y-8*scale);
+        ctx.moveTo(x, y+2*scale); ctx.lineTo(x+10*scale, y+2*scale);
+        ctx.moveTo(x+10*scale, y+2*scale); ctx.lineTo(x+10*scale, y+10*scale);
+      } else if (poseType === 1) {
+        ctx.arc(x, y - 10*scale, 3*scale, 0, Math.PI*2);
+        ctx.moveTo(x, y-7*scale); ctx.lineTo(x, y+2*scale);
+        ctx.moveTo(x, y-5*scale); ctx.lineTo(x+15*scale, y-5*scale);
+      } else {
+        ctx.arc(x, y - 8*scale, 3*scale, 0, Math.PI*2);
+        ctx.moveTo(x, y-5*scale); ctx.lineTo(x, y+2*scale);
+        ctx.moveTo(x, y+2*scale); ctx.lineTo(x-8*scale, y+5*scale);
+        ctx.moveTo(x, y+2*scale); ctx.lineTo(x+8*scale, y+5*scale);
+      }
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function initArt() {
+    const canvases = document.querySelectorAll('.art-canvas');
+    canvases.forEach(canvas => {
+      const ctx = canvas.getContext('2d');
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+      const weather = canvas.dataset.weather || 'sunny';
+      drawLifeInkArtEx(ctx, canvas.width, canvas.height, weather);
+    });
+  }
+
+  function drawLifeInkArtEx(ctx, w, h, weather) {
+    ctx.clearRect(0, 0, w, h);
+    const accent = currentTheme === 'dark' ? '#00bac4' : '#008b8b';
+    const defaultLine = currentTheme === 'dark' ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)';
+    const mountainFill = currentTheme === 'dark' ? 'rgba(255, 255, 255,' : 'rgba(0, 0, 0,';
+
+    // 1. 绘制背景山脉
+    let peaks = [];
+    for (let i = 0; i < 3; i++) {
+      ctx.fillStyle = `${mountainFill} ${0.05 + i * 0.03})`;
+      ctx.beginPath();
+      ctx.moveTo(0, h - (i * 45));
+      let segs = 7;
+      for (let j = 1; j <= segs; j++) {
+        const px = (w / segs) * j;
+        const py = h - (i * 45) - (Math.random() * 60 + 40);
+        ctx.lineTo(px, py);
+        if (Math.random() > 0.4) peaks.push({x: px, y: py, layer: i});
+      }
+      ctx.lineTo(w, h); ctx.lineTo(0, h); ctx.fill();
+    }
+
+    // 2. 瀑布逻辑
+    peaks.forEach(p => {
+      if (p.layer > 0 && Math.random() > 0.5) {
+        ctx.beginPath();
+        ctx.strokeStyle = currentTheme === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)';
+        ctx.lineWidth = Math.random() * 2 + 1;
+        let cx = p.x, cy = p.y;
+        ctx.moveTo(cx, cy);
+        while(cy < h) {
+          cx += Math.sin(cy * 0.1) * 3;
+          cy += 6;
+          ctx.lineTo(cx, cy);
+        }
+        ctx.stroke();
+      }
+    });
+
+    // 3. 气象视觉强化
+    const density = 80;
+    ctx.lineWidth = 1.2;
+    for(let i=0; i<density; i++) {
+      const x = Math.random() * w, y = Math.random() * h * 0.85;
+      const size = Math.random() * 15 + 6;
+      ctx.globalAlpha = Math.random() * 0.5 + 0.25;
+      ctx.strokeStyle = Math.random() > 0.85 ? accent : defaultLine;
+      ctx.beginPath();
+      switch(weather) {
+        case 'sunny':
+          ctx.arc(x, y, size, 0, Math.PI * 2);
+          if(Math.random() > 0.7) {
+            ctx.moveTo(x, y); ctx.lineTo(x + Math.cos(i)*60, y + Math.sin(i)*60);
+          }
+          break;
+        case 'rainy':
+          ctx.moveTo(x, y); ctx.lineTo(x + 4, y + size * 6);
+          break;
+        case 'snowy':
+          ctx.moveTo(x-size/2, y); ctx.lineTo(x+size/2, y);
+          ctx.moveTo(x, y-size/2); ctx.lineTo(x, y+size/2);
+          ctx.moveTo(x-size/3, y-size/3); ctx.lineTo(x+size/3, y+size/3);
+          break;
+        case 'cloudy':
+          ctx.arc(x, y, size * 3, 0, Math.PI * 2);
+          break;
+        case 'overcast':
+          ctx.strokeRect(x, y, size * 6, 3);
+          break;
+        case 'foggy':
+          ctx.moveTo(x, y); ctx.lineTo(x + w * 0.3, y);
+          break;
+      }
+      ctx.stroke();
+    }
+
+    // 4. 绘制火柴人
+    const peopleCount = 2 + Math.floor(Math.random() * 3);
+    for(let i=0; i<peopleCount; i++) {
+      const targetPeak = peaks[Math.floor(Math.random() * peaks.length)];
+      const px = targetPeak.x + (Math.random()-0.5) * 50;
+      const py = targetPeak.y - 10;
+      drawStickPersonEx(ctx, px, py, 0.9 + Math.random() * 0.6, weather);
+    }
+    ctx.globalAlpha = 1.0;
+  }
+
+  window.onload = () => {
+    initTheme();
+    buildCalendar();
+    initCalendarNav();
+    initArt();
+  };
+  window.addEventListener('resize', initArt);
+</script>
+</body>
+</html>

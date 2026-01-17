@@ -1,0 +1,905 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Retro 88x31 Button Maker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Retro Windows 95/98 Aesthetic adjustments */
+      body {
+        background-color: #c0c0c0;
+        font-family: "Courier New", Courier, monospace;
+      }
+
+      .win95-box {
+        background: #c0c0c0;
+        border-top: 2px solid #dfdfdf;
+        border-left: 2px solid #dfdfdf;
+        border-right: 2px solid #000000;
+        border-bottom: 2px solid #000000;
+        box-shadow:
+          1px 1px 0px 0px #ffffff inset,
+          -1px -1px 0px 0px #808080 inset;
+      }
+
+      .win95-inset {
+        background: #ffffff;
+        border-top: 2px solid #808080;
+        border-left: 2px solid #808080;
+        border-right: 2px solid #dfdfdf;
+        border-bottom: 2px solid #dfdfdf;
+        box-shadow:
+          1px 1px 0px 0px #000000 inset,
+          -1px -1px 0px 0px #ffffff inset;
+      }
+
+      .win95-btn {
+        background: #c0c0c0;
+        border-top: 2px solid #dfdfdf;
+        border-left: 2px solid #dfdfdf;
+        border-right: 2px solid #000000;
+        border-bottom: 2px solid #000000;
+        color: black;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      .win95-btn:active {
+        border-top: 2px solid #000000;
+        border-left: 2px solid #000000;
+        border-right: 2px solid #dfdfdf;
+        border-bottom: 2px solid #dfdfdf;
+        transform: translate(1px, 1px);
+      }
+
+      .win95-header {
+        background: linear-gradient(90deg, #000080 0%, #1084d0 100%);
+        color: white;
+        padding: 2px 4px;
+        font-weight: bold;
+        font-family: "Arial", sans-serif;
+        font-size: 14px;
+      }
+
+      /* Canvas rendering */
+      canvas {
+        image-rendering: pixelated; /* Vital for retro look */
+        width: 352px; /* 88 * 4 */
+        height: 124px; /* 31 * 4 */
+      }
+
+      .preview-sm {
+        image-rendering: pixelated;
+        width: 88px;
+        height: 31px;
+      }
+
+      /* Custom Scrollbar for nostalgia */
+      ::-webkit-scrollbar {
+        width: 16px;
+        background: #dfdfdf;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #c0c0c0;
+        border: 2px solid;
+        border-color: #dfdfdf #404040 #404040 #dfdfdf;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen flex flex-col items-center justify-center p-4">
+    <div class="win95-box w-full max-w-4xl flex flex-col relative">
+      <div class="win95-header flex justify-between items-center">
+        <span>Retro Button Generator.exe</span>
+        <button class="win95-btn px-2 leading-none text-xs">X</button>
+      </div>
+
+      <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Left Panel: Preview & Output -->
+        <div class="flex flex-col gap-4">
+          <div class="win95-box p-1">
+            <div
+              class="bg-gray-800 flex justify-center items-center p-4 win95-inset"
+            >
+              <canvas id="mainCanvas" width="88" height="31"></canvas>
+            </div>
+            <div class="text-center mt-2 text-xs text-gray-600 mb-2">
+              Prevew (400% Zoom)
+            </div>
+          </div>
+
+          <div class="win95-box p-2">
+            <h3 class="font-bold mb-2">Real Size</h3>
+            <div
+              class="flex items-center gap-4 justify-center bg-gray-200 p-4 win95-inset"
+            >
+              <img
+                id="realPreview"
+                class="preview-sm border border-gray-400"
+                alt="Output"
+              />
+              <span class="text-xs text-gray-500"><- Right click to save</span>
+            </div>
+          </div>
+
+          <div class="win95-box p-2">
+            <p class="text-xs mb-2">Tips:</p>
+            <ul class="text-xs list-disc pl-4 space-y-1">
+              <li>Standard size is 88x31 pixels.</li>
+              <li>Use high contrast colors.</li>
+              <li>Text Dithering creates a checkerboard effect.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Right Panel: Controls -->
+        <div class="flex flex-col gap-4">
+          <!-- Tabs -->
+          <div class="flex gap-1 border-b-2 border-gray-500 pb-1">
+            <button
+              class="win95-btn px-3 py-1 text-sm active-tab"
+              onclick="switchTab('template')"
+            >
+              Template
+            </button>
+            <button
+              class="win95-btn px-3 py-1 text-sm"
+              onclick="switchTab('text')"
+            >
+              Text
+            </button>
+            <button
+              class="win95-btn px-3 py-1 text-sm"
+              onclick="switchTab('image')"
+            >
+              Image
+            </button>
+          </div>
+
+          <!-- Template Controls -->
+          <div id="tab-template" class="control-tab block">
+            <div class="win95-box p-3 space-y-3">
+              <div class="flex flex-col gap-1">
+                <label class="text-xs font-bold">Style:</label>
+                <select
+                  id="templateSelect"
+                  class="win95-inset p-1 text-sm w-full"
+                >
+                  <option value="split">Classic Split (Left/Right)</option>
+                  <option value="simple">Simple Border</option>
+                  <option value="terminal">Terminal / Console</option>
+                  <option value="scanlines">TV Scanlines</option>
+                </select>
+              </div>
+
+              <div class="flex flex-col gap-1">
+                <label class="text-xs font-bold">Background Color 1:</label>
+                <div class="flex gap-2">
+                  <input
+                    type="color"
+                    id="bgColor1"
+                    value="#ff00ff"
+                    class="w-8 h-8 p-0 border-0"
+                  />
+                  <input
+                    type="text"
+                    id="bgColor1Text"
+                    value="#ff00ff"
+                    class="win95-inset px-1 text-xs flex-1 uppercase"
+                  />
+                </div>
+              </div>
+
+              <div class="flex flex-col gap-1">
+                <label class="text-xs font-bold"
+                  >Background Color 2 (For Split/Gradient):</label
+                >
+                <div class="flex gap-2">
+                  <input
+                    type="color"
+                    id="bgColor2"
+                    value="#000000"
+                    class="w-8 h-8 p-0 border-0"
+                  />
+                  <input
+                    type="text"
+                    id="bgColor2Text"
+                    value="#000000"
+                    class="win95-inset px-1 text-xs flex-1 uppercase"
+                  />
+                </div>
+              </div>
+
+              <div class="flex flex-col gap-1">
+                <label class="text-xs font-bold">Border Color:</label>
+                <div class="flex gap-2">
+                  <input
+                    type="color"
+                    id="borderColor"
+                    value="#ffffff"
+                    class="w-8 h-8 p-0 border-0"
+                  />
+                  <input
+                    type="text"
+                    id="borderColorText"
+                    value="#ffffff"
+                    class="win95-inset px-1 text-xs flex-1 uppercase"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Text Controls -->
+          <div id="tab-text" class="control-tab hidden">
+            <div class="win95-box p-3 space-y-3">
+              <!-- Line 1 -->
+              <div class="border-b border-gray-400 pb-2">
+                <label class="text-xs font-bold block mb-1">Text Line 1:</label>
+                <input
+                  type="text"
+                  id="text1"
+                  value="RETRO"
+                  class="win95-inset w-full p-1 text-sm mb-2 font-mono"
+                />
+                <div class="flex gap-2 mb-2">
+                  <input
+                    type="color"
+                    id="textColor1"
+                    value="#ffffff"
+                    class="w-6 h-6"
+                  />
+                  <label class="text-xs pt-1">Color</label>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <label class="text-xs flex items-center">
+                    X:
+                    <input
+                      type="number"
+                      id="text1X"
+                      value="44"
+                      class="win95-inset w-12 ml-1 text-xs"
+                    />
+                  </label>
+                  <label class="text-xs flex items-center">
+                    Y:
+                    <input
+                      type="number"
+                      id="text1Y"
+                      value="10"
+                      class="win95-inset w-12 ml-1 text-xs"
+                    />
+                  </label>
+                </div>
+                <div class="flex gap-4 mt-1">
+                  <label class="text-xs flex items-center">
+                    <input
+                      type="checkbox"
+                      id="text1Shadow"
+                      class="mr-1"
+                      checked
+                    />
+                    Shadow
+                  </label>
+                  <label
+                    class="text-xs flex items-center text-blue-800 font-bold"
+                  >
+                    <input type="checkbox" id="text1Dither" class="mr-1" />
+                    1-Bit Dither
+                  </label>
+                </div>
+              </div>
+
+              <!-- Line 2 -->
+              <div>
+                <label class="text-xs font-bold block mb-1">Text Line 2:</label>
+                <input
+                  type="text"
+                  id="text2"
+                  value="制造机"
+                  class="win95-inset w-full p-1 text-sm mb-2 font-mono"
+                />
+                <div class="flex gap-2 mb-2">
+                  <input
+                    type="color"
+                    id="textColor2"
+                    value="#ffff00"
+                    class="w-6 h-6"
+                  />
+                  <label class="text-xs pt-1">Color</label>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <label class="text-xs flex items-center">
+                    X:
+                    <input
+                      type="number"
+                      id="text2X"
+                      value="44"
+                      class="win95-inset w-12 ml-1 text-xs"
+                    />
+                  </label>
+                  <label class="text-xs flex items-center">
+                    Y:
+                    <input
+                      type="number"
+                      id="text2Y"
+                      value="22"
+                      class="win95-inset w-12 ml-1 text-xs"
+                    />
+                  </label>
+                </div>
+                <div class="flex gap-4 mt-1">
+                  <label class="text-xs flex items-center">
+                    <input
+                      type="checkbox"
+                      id="text2Shadow"
+                      class="mr-1"
+                      checked
+                    />
+                    Shadow
+                  </label>
+                  <label
+                    class="text-xs flex items-center text-blue-800 font-bold"
+                  >
+                    <input type="checkbox" id="text2Dither" class="mr-1" />
+                    1-Bit Dither
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Image Controls -->
+          <div id="tab-image" class="control-tab hidden">
+            <div class="win95-box p-3 space-y-3">
+              <div class="flex flex-col gap-1">
+                <label class="text-xs font-bold">Upload Icon/Image:</label>
+                <input
+                  type="file"
+                  id="imageUpload"
+                  accept="image/*"
+                  class="text-xs"
+                />
+              </div>
+
+              <div class="flex flex-col gap-1">
+                <label class="text-xs font-bold">Position & Scale:</label>
+                <div class="grid grid-cols-2 gap-2">
+                  <label class="text-xs flex items-center">
+                    X:
+                    <input
+                      type="number"
+                      id="imgX"
+                      value="0"
+                      class="win95-inset w-12 ml-1 text-xs"
+                    />
+                  </label>
+                  <label class="text-xs flex items-center">
+                    Y:
+                    <input
+                      type="number"
+                      id="imgY"
+                      value="0"
+                      class="win95-inset w-12 ml-1 text-xs"
+                    />
+                  </label>
+                  <label class="text-xs flex items-center">
+                    Size:
+                    <input
+                      type="number"
+                      id="imgScale"
+                      value="100"
+                      class="win95-inset w-12 ml-1 text-xs"
+                    />
+                    %
+                  </label>
+                </div>
+              </div>
+
+              <div class="flex flex-col gap-1">
+                <label class="text-xs font-bold">Effects:</label>
+                <label class="text-xs flex items-center">
+                  <input
+                    type="checkbox"
+                    id="imgPixelate"
+                    class="mr-1"
+                    checked
+                  />
+                  Pixelate (Nearest Neighbor)
+                </label>
+                <label class="text-xs flex items-center">
+                  <input type="checkbox" id="imgDither" class="mr-1" /> 1-Bit
+                  Dither
+                </label>
+              </div>
+
+              <button
+                onclick="clearImage()"
+                class="win95-btn px-2 py-1 text-xs w-full mt-2"
+              >
+                Clear Image
+              </button>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex gap-2 pt-2">
+            <button
+              onclick="downloadBtn()"
+              class="win95-btn flex-1 py-2 text-sm font-bold active:translate-y-1"
+            >
+              SAVE PNG
+            </button>
+            <button onclick="randomize()" class="win95-btn px-4 py-2 text-sm">
+              RANDOM
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="p-2 border-t border-gray-500 text-xs text-gray-600 flex justify-between"
+      >
+        <span>Ready.</span>
+        <span>Output: 176x62px (2x)</span>
+      </div>
+    </div>
+
+    <script>
+      /**
+       * Micro Pixel Font Definition (5x3 / 5x4 approx)
+       * Defining a very simple pixel font map because standard canvas text
+       * antialiasing ruins the retro effect.
+       */
+      const PIXEL_FONT = {
+        A: [0x2, 0x5, 0x7, 0x5, 0x5],
+        B: [0x6, 0x5, 0x6, 0x5, 0x6],
+        C: [0x3, 0x4, 0x4, 0x4, 0x3],
+        D: [0x6, 0x5, 0x5, 0x5, 0x6],
+        E: [0x7, 0x4, 0x6, 0x4, 0x7],
+        F: [0x7, 0x4, 0x6, 0x4, 0x4],
+        G: [0x3, 0x4, 0x5, 0x5, 0x3],
+        H: [0x5, 0x5, 0x7, 0x5, 0x5],
+        I: [0x7, 0x2, 0x2, 0x2, 0x7],
+        J: [0x1, 0x1, 0x1, 0x5, 0x2],
+        K: [0x5, 0x5, 0x6, 0x5, 0x5],
+        L: [0x4, 0x4, 0x4, 0x4, 0x7],
+        M: [0x5, 0x7, 0x5, 0x5, 0x5],
+        N: [0x6, 0x5, 0x5, 0x5, 0x5],
+        O: [0x2, 0x5, 0x5, 0x5, 0x2],
+        P: [0x6, 0x5, 0x6, 0x4, 0x4],
+        Q: [0x2, 0x5, 0x5, 0x6, 0x3],
+        R: [0x6, 0x5, 0x6, 0x5, 0x5],
+        S: [0x3, 0x4, 0x2, 0x1, 0x6],
+        T: [0x7, 0x2, 0x2, 0x2, 0x2],
+        U: [0x5, 0x5, 0x5, 0x5, 0x2],
+        V: [0x5, 0x5, 0x5, 0x2, 0x2],
+        W: [0x5, 0x5, 0x5, 0x7, 0x5],
+        X: [0x5, 0x5, 0x2, 0x5, 0x5],
+        Y: [0x5, 0x5, 0x2, 0x2, 0x2],
+        Z: [0x7, 0x1, 0x2, 0x4, 0x7],
+        0: [0x2, 0x5, 0x5, 0x5, 0x2],
+        1: [0x2, 0x6, 0x2, 0x2, 0x7],
+        2: [0x2, 0x5, 0x1, 0x2, 0x7],
+        3: [0x2, 0x1, 0x2, 0x1, 0x2],
+        4: [0x5, 0x5, 0x7, 0x1, 0x1],
+        5: [0x7, 0x4, 0x6, 0x1, 0x6],
+        6: [0x2, 0x4, 0x6, 0x5, 0x2],
+        7: [0x7, 0x1, 0x2, 0x4, 0x4],
+        8: [0x2, 0x5, 0x2, 0x5, 0x2],
+        9: [0x2, 0x5, 0x3, 0x1, 0x2],
+        " ": [0x0, 0x0, 0x0, 0x0, 0x0],
+        ".": [0x0, 0x0, 0x0, 0x0, 0x1],
+        ":": [0x0, 0x2, 0x0, 0x2, 0x0],
+        "-": [0x0, 0x0, 0x7, 0x0, 0x0],
+        "!": [0x2, 0x2, 0x2, 0x0, 0x2],
+        "?": [0x6, 0x1, 0x2, 0x0, 0x2],
+        "/": [0x1, 0x1, 0x2, 0x4, 0x4]
+      };
+
+      // State
+      const state = {
+        template: "split",
+        bgColor1: "#ff00ff",
+        bgColor2: "#000000",
+        borderColor: "#ffffff",
+        text1: "RETRO",
+        text1Color: "#ffffff",
+        text1X: 44,
+        text1Y: 10,
+        text1Shadow: true,
+        text1Dither: false,
+        text2: "制造机",
+        text2Color: "#ffff00",
+        text2X: 44,
+        text2Y: 22,
+        text2Shadow: true,
+        text2Dither: false,
+        img: null,
+        imgX: 0,
+        imgY: 0,
+        imgScale: 100,
+        imgPixelate: true,
+        imgDither: false
+      };
+
+      const canvas = document.getElementById("mainCanvas");
+      const ctx = canvas.getContext("2d");
+      const realPreview = document.getElementById("realPreview");
+
+      // Helper: Create a checkerboard pattern for Canvas fillStyle
+      function getDitherPattern(color) {
+        // Create a temporary 2x2 canvas
+        const pCanvas = document.createElement("canvas");
+        pCanvas.width = 2;
+        pCanvas.height = 2;
+        const pCtx = pCanvas.getContext("2d");
+
+        // Fill logic: (0,0) and (1,1)
+        pCtx.fillStyle = color;
+        pCtx.fillRect(0, 0, 1, 1);
+        pCtx.fillRect(1, 1, 1, 1);
+        // (0,1) and (1,0) remain transparent
+
+        return ctx.createPattern(pCanvas, "repeat");
+      }
+
+      // Helper: Generate a scaled version of the canvas for export
+      function getScaledCanvas(scale) {
+        const scaledCanvas = document.createElement("canvas");
+        scaledCanvas.width = 88 * scale;
+        scaledCanvas.height = 31 * scale;
+        const sCtx = scaledCanvas.getContext("2d");
+
+        // Critical: Disable smoothing to keep pixel art crisp
+        sCtx.imageSmoothingEnabled = false;
+        sCtx.drawImage(canvas, 0, 0, scaledCanvas.width, scaledCanvas.height);
+
+        return scaledCanvas;
+      }
+
+      // Helper: Draw single pixel character
+      function drawChar(char, x, y, color, shadow = false, dither = false) {
+        const key = char.toUpperCase();
+        const map = PIXEL_FONT[key] || PIXEL_FONT["?"];
+
+        const shadowColor = "#000000";
+
+        // Draw rows
+        for (let r = 0; r < 5; r++) {
+          const rowBits = map[r];
+          // Draw cols (3 bits usually)
+          for (let c = 0; c < 3; c++) {
+            // Check if bit c is set (from left)
+            if ((rowBits >> (2 - c)) & 1) {
+              const currentX = x + c;
+              const currentY = y + r;
+
+              // 1-Bit Dither Check: Skip pixel if (x+y) is odd (or even)
+              if (dither && (currentX + currentY) % 2 !== 0) {
+                continue;
+              }
+
+              if (shadow) {
+                ctx.fillStyle = shadowColor;
+                ctx.fillRect(currentX + 1, currentY + 1, 1, 1);
+              }
+              ctx.fillStyle = color;
+              ctx.fillRect(currentX, currentY, 1, 1);
+            }
+          }
+        }
+      }
+
+      // Helper: Get width of a character (Pixel font or System font)
+      function getCharWidth(char) {
+        const key = char.toUpperCase();
+        if (PIXEL_FONT[key]) {
+          return 4; // 3px width + 1px spacing
+        } else {
+          // For Chinese/Non-mapped chars, measure with canvas
+          ctx.font =
+            'bold 12px "SimSun", "Songti SC", "Courier New", monospace';
+          return ctx.measureText(char).width;
+        }
+      }
+
+      function drawString(text, x, y, color, shadow, dither, align = "center") {
+        // 1. Calculate total width
+        let totalWidth = 0;
+        for (let char of text) {
+          totalWidth += getCharWidth(char);
+        }
+
+        let startX = x;
+        if (align === "center") startX = Math.floor(x - totalWidth / 2);
+        if (align === "right") startX = x - totalWidth;
+
+        let currentX = startX;
+
+        // Prepare dither patterns if needed
+        let fillStyleMain = color;
+        let fillStyleShadow = "#000000";
+
+        if (dither) {
+          fillStyleMain = getDitherPattern(color);
+          fillStyleShadow = getDitherPattern("#000000");
+        }
+
+        // 2. Draw loop
+        for (let i = 0; i < text.length; i++) {
+          const char = text[i];
+          const key = char.toUpperCase();
+
+          if (PIXEL_FONT[key]) {
+            // Use custom pixel font
+            drawChar(char, currentX, y, color, shadow, dither);
+            currentX += 4;
+          } else {
+            // Use Canvas text fallback
+            ctx.font = 'bold 12px "SimSun", "PMingLiU", "Songti SC", monospace';
+            ctx.textBaseline = "top";
+            const yOffset = -3;
+
+            if (shadow) {
+              ctx.fillStyle = fillStyleShadow;
+              ctx.fillText(char, currentX + 1, y + yOffset + 1);
+            }
+
+            ctx.fillStyle = fillStyleMain;
+            ctx.fillText(char, currentX, y + yOffset);
+
+            currentX += ctx.measureText(char).width;
+          }
+        }
+      }
+
+      function updateState() {
+        state.template = document.getElementById("templateSelect").value;
+        state.bgColor1 = document.getElementById("bgColor1").value;
+        state.bgColor2 = document.getElementById("bgColor2").value;
+        state.borderColor = document.getElementById("borderColor").value;
+
+        state.text1 = document.getElementById("text1").value;
+        state.text1Color = document.getElementById("textColor1").value;
+        state.text1X = parseInt(document.getElementById("text1X").value) || 0;
+        state.text1Y = parseInt(document.getElementById("text1Y").value) || 0;
+        state.text1Shadow = document.getElementById("text1Shadow").checked;
+        state.text1Dither = document.getElementById("text1Dither").checked;
+
+        state.text2 = document.getElementById("text2").value;
+        state.text2Color = document.getElementById("textColor2").value;
+        state.text2X = parseInt(document.getElementById("text2X").value) || 0;
+        state.text2Y = parseInt(document.getElementById("text2Y").value) || 0;
+        state.text2Shadow = document.getElementById("text2Shadow").checked;
+        state.text2Dither = document.getElementById("text2Dither").checked;
+
+        state.imgX = parseInt(document.getElementById("imgX").value) || 0;
+        state.imgY = parseInt(document.getElementById("imgY").value) || 0;
+        state.imgScale =
+          parseInt(document.getElementById("imgScale").value) || 100;
+        state.imgPixelate = document.getElementById("imgPixelate").checked;
+        state.imgDither = document.getElementById("imgDither").checked;
+
+        draw();
+      }
+
+      function draw() {
+        // Clear
+        ctx.clearRect(0, 0, 88, 31);
+
+        // 1. Backgrounds & Templates
+        if (state.template === "split") {
+          // Left block
+          ctx.fillStyle = state.bgColor1;
+          ctx.fillRect(0, 0, 22, 31); // Classic 22px split
+          // Right block
+          ctx.fillStyle = state.bgColor2;
+          ctx.fillRect(22, 0, 66, 31);
+
+          // Separator line
+          ctx.fillStyle = state.borderColor;
+          ctx.fillRect(22, 0, 1, 31);
+        } else if (state.template === "simple") {
+          ctx.fillStyle = state.bgColor1;
+          ctx.fillRect(0, 0, 88, 31);
+        } else if (state.template === "terminal") {
+          ctx.fillStyle = "#000000";
+          ctx.fillRect(0, 0, 88, 31);
+          // Scanline effect
+          ctx.fillStyle = "rgba(0, 255, 0, 0.1)";
+          for (let i = 0; i < 31; i += 2) ctx.fillRect(0, i, 88, 1);
+        } else if (state.template === "scanlines") {
+          // Gradient
+          const grad = ctx.createLinearGradient(0, 0, 0, 31);
+          grad.addColorStop(0, state.bgColor1);
+          grad.addColorStop(1, state.bgColor2);
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, 88, 31);
+
+          // Scanlines
+          ctx.fillStyle = "rgba(0,0,0,0.2)";
+          for (let i = 0; i < 31; i += 2) ctx.fillRect(0, i, 88, 1);
+        }
+
+        // 2. Image
+        if (state.img) {
+          ctx.save();
+          if (state.imgPixelate) {
+            ctx.imageSmoothingEnabled = false;
+          }
+          const w = state.img.width * (state.imgScale / 100);
+          const h = state.img.height * (state.imgScale / 100);
+          ctx.drawImage(state.img, state.imgX, state.imgY, w, h);
+
+          // Simple Dithering (Optional effect)
+          if (state.imgDither) {
+            const imgData = ctx.getImageData(0, 0, 88, 31);
+            const d = imgData.data;
+            for (let i = 0; i < d.length; i += 4) {
+              const avg = (d[i] + d[i + 1] + d[i + 2]) / 3;
+              const threshold = 128;
+              const val = avg > threshold ? 255 : 0;
+              // Apply transparent check
+              if (d[i + 3] > 0) {
+                d[i] = d[i + 1] = d[i + 2] = val;
+              }
+            }
+            ctx.putImageData(imgData, 0, 0);
+          }
+          ctx.restore();
+        }
+
+        // 3. Borders
+        ctx.strokeStyle = state.borderColor;
+
+        // Outer border
+        if (state.template !== "terminal") {
+          ctx.strokeRect(0.5, 0.5, 87, 30);
+        }
+
+        // Inner highlights for that "button" feel (simple version)
+        if (state.template === "simple" || state.template === "split") {
+          ctx.fillStyle = "rgba(255,255,255,0.4)";
+          ctx.fillRect(1, 1, 86, 1); // Top highlight
+          ctx.fillRect(1, 1, 1, 29); // Left highlight
+        }
+
+        // 4. Text
+        drawString(
+          state.text1,
+          state.text1X,
+          state.text1Y,
+          state.text1Color,
+          state.text1Shadow,
+          state.text1Dither,
+          "center"
+        );
+        drawString(
+          state.text2,
+          state.text2X,
+          state.text2Y,
+          state.text2Color,
+          state.text2Shadow,
+          state.text2Dither,
+          "center"
+        );
+
+        // Update real preview - NOW 2X SCALED
+        // We use getScaledCanvas(2) to generate a high-res data URL
+        realPreview.src = getScaledCanvas(2).toDataURL("image/png");
+      }
+
+      // UI Logic
+      function switchTab(tabName) {
+        document
+          .querySelectorAll(".control-tab")
+          .forEach((el) => el.classList.add("hidden"));
+        document.getElementById(`tab-${tabName}`).classList.remove("hidden");
+
+        // Just for visual "active" state
+        document
+          .querySelectorAll(".win95-btn")
+          .forEach((el) => el.classList.remove("active-tab", "font-bold"));
+        // Find the button that called this (hacky but works for small app)
+        const buttons = document.querySelectorAll(".win95-btn");
+        if (tabName === "template") buttons[1].classList.add("font-bold"); // Close button is 0
+        // ...simplified tab logic
+      }
+
+      // Event Listeners
+      const inputs = document.querySelectorAll("input, select");
+      inputs.forEach((input) => {
+        if (input.type === "color") {
+          input.addEventListener("input", (e) => {
+            // Sync color picker with text input
+            const textInput = document.getElementById(e.target.id + "Text");
+            if (textInput) textInput.value = e.target.value;
+            updateState();
+          });
+        } else if (
+          input.type === "text" &&
+          input.id.includes("Color") &&
+          input.id.includes("Text")
+        ) {
+          input.addEventListener("change", (e) => {
+            const picker = document.getElementById(
+              e.target.id.replace("Text", "")
+            );
+            if (picker) picker.value = e.target.value;
+            updateState();
+          });
+        } else {
+          input.addEventListener("input", updateState);
+        }
+      });
+
+      // Image Upload
+      document.getElementById("imageUpload").addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+              state.img = img;
+              // Auto positioning for split template?
+              if (state.template === "split") {
+                state.imgX = 2;
+                state.imgY = 7;
+                // Auto scale if huge
+                if (img.height > 20)
+                  state.imgScale = Math.floor((20 / img.height) * 100);
+              }
+              updateState();
+            };
+            img.src = event.target.result;
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+
+      function clearImage() {
+        state.img = null;
+        document.getElementById("imageUpload").value = "";
+        updateState();
+      }
+
+      function downloadBtn() {
+        const link = document.createElement("a");
+        link.download = `button_2x_${Date.now()}.png`;
+        // Use the helper to get the 2x scaled version
+        link.href = getScaledCanvas(2).toDataURL("image/png");
+        link.click();
+      }
+
+      function randomize() {
+        const colors = [
+          "#ff00ff",
+          "#00ffff",
+          "#ffff00",
+          "#000000",
+          "#ffffff",
+          "#000080",
+          "#c0c0c0",
+          "#800000"
+        ];
+        const tmpls = ["split", "simple", "scanlines"];
+
+        state.template = tmpls[Math.floor(Math.random() * tmpls.length)];
+        state.bgColor1 = colors[Math.floor(Math.random() * colors.length)];
+        state.bgColor2 = colors[Math.floor(Math.random() * colors.length)];
+
+        // Update inputs
+        document.getElementById("templateSelect").value = state.template;
+        document.getElementById("bgColor1").value = state.bgColor1;
+        document.getElementById("bgColor2").value = state.bgColor2;
+
+        updateState();
+      }
+
+      // Init
+      updateState();
+    </script>
+  </body>
+</html>

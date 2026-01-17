@@ -1,0 +1,170 @@
+{
+  "0": {
+    "label": "晴",
+    "label2": "Clear sky",
+    "label3": "Sun",
+    "icon": "☀️"
+  },
+  "1": {
+    "label": "晴到多云",
+    "label2": "Mainly clear",
+    "label3": "Sun With Small Cloud",
+    "icon": "🌤️"
+  },
+  "2": {
+    "label": "多云",
+    "label2": "Partly cloudy",
+    "label3": "Sun Behind Small Cloud",
+    "icon": "⛅"
+  },
+  "3": {
+    "label": "阴",
+    "label2": "Overcast",
+    "label3": "Cloud",
+    "icon": "☁️"
+  },
+  "45": {
+    "label": "雾",
+    "label2": "Fog",
+    "label3": "Fog",
+    "icon": "🌫️"
+  },
+  "48": {
+    "label": "雾凇",
+    "label2": "Depositing rime fog",
+    "label3": "Fog",
+    "icon": "🌫️"
+  },
+  "51": {
+    "label": "毛毛雨",
+    "label2": "Drizzle: Light",
+    "label3": "Sun Behind Rain Cloud",
+    "icon": "🌦️"
+  },
+  "53": {
+    "label": "中毛毛雨",
+    "label2": "Drizzle: Moderate",
+    "label3": "Sun Behind Rain Cloud",
+    "icon": "🌦️"
+  },
+  "55": {
+    "label": "大毛毛雨",
+    "label2": "Drizzle: Dense",
+    "label3": "Sun Behind Rain Cloud",
+    "icon": "🌦️"
+  },
+  "56": {
+    "label": "小冻毛毛雨",
+    "label2": "Freezing Drizzle: Light",
+    "label3": "Cloud With Snow",
+    "icon": "🌨️"
+  },
+  "57": {
+    "label": "大冻毛毛雨",
+    "label2": "Freezing Drizzle: Dense",
+    "label3": "Cloud With Snow",
+    "icon": "🌨️"
+  },
+  "61": {
+    "label": "小雨",
+    "label2": "Rain: Slight",
+    "label3": "Cloud With Rain",
+    "icon": "🌧️"
+  },
+  "63": {
+    "label": "中雨",
+    "label2": "Rain: Moderate",
+    "label3": "Cloud With Rain",
+    "icon": "🌧️"
+  },
+  "65": {
+    "label": "大雨",
+    "label2": "Rain: Heavy",
+    "label3": "Cloud With Rain",
+    "icon": "🌧️"
+  },
+  "66": {
+    "label": "小冻雨",
+    "label2": "Freezing Rain: Light",
+    "label3": "Cloud With Snow",
+    "icon": "🌨️"
+  },
+  "67": {
+    "label": "大冻雨",
+    "label2": "Freezing Rain: Heavy",
+    "label3": "Cloud With Snow",
+    "icon": "🌨️"
+  },
+  "71": {
+    "label": "小雪",
+    "label2": "Snow fall: Slight",
+    "label3": "Snowflake",
+    "icon": "❄️"
+  },
+  "73": {
+    "label": "中雪",
+    "label2": "Snow fall: Moderate",
+    "label3": "Snowflake",
+    "icon": "❄️"
+  },
+  "75": {
+    "label": "大雪",
+    "label2": "Snow fall: Heavy",
+    "label3": "Snowflake",
+    "icon": "❄️"
+  },
+  "77": {
+    "label": "米雪",
+    "label2": "Snow grains",
+    "label3": "Snowflake",
+    "icon": "❄️"
+  },
+  "80": {
+    "label": "阵雨",
+    "label2": "Rain showers: Slight",
+    "label3": "Sun Behind Rain Cloud",
+    "icon": "🌦️"
+  },
+  "81": {
+    "label": "中阵雨",
+    "label2": "Rain showers: Moderate",
+    "label3": "Sun Behind Rain Cloud",
+    "icon": "🌦️"
+  },
+  "82": {
+    "label": "强阵雨",
+    "label2": "Rain showers: Violent",
+    "label3": "Cloud With Lightning And Rain",
+    "icon": "⛈️"
+  },
+  "85": {
+    "label": "小阵雪",
+    "label2": "Snow showers: Slight",
+    "label3": "Cloud With Snow",
+    "icon": "🌨️"
+  },
+  "86": {
+    "label": "大阵雪",
+    "label2": "Snow showers: Heavy",
+    "label3": "Cloud With Snow",
+    "icon": "🌨️"
+  },
+  "95": {
+    "label": "雷阵雨",
+    "label2": "Thunderstorm: Slight or moderate",
+    "label3": "Cloud With Lightning And Rain",
+    "icon": "⛈️"
+  },
+  "96": {
+    "label": "雷阵雨伴冰雹",
+    "label2": "Thunderstorm with slight hail",
+    "label3": "Cloud With Lightning And Rain",
+    "icon": "⛈️"
+  },
+  "99": {
+    "label": "强雷阵雨伴冰雹",
+    "label2": "Thunderstorm with heavy hail",
+    "label3": "Cloud With Lightning And Rain",
+    "icon": "⛈️"
+  }
+}

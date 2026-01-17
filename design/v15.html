@@ -1,0 +1,1573 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>[米随随] s5s5 - Pixel Portal</title>
+    <!-- 引入 JetBrains Mono 字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- 0. RESET & BASE --- */
+      :root {
+        /* 亮色模式 (Light Mode Defaults) */
+        --bg-color: #6a7680; /* 网页背景 */
+        --container-bg: #999; /* 网格线颜色 */
+        --border-color: #000; /* 强边框 */
+
+        --cell-bg: #fff; /* 单元格背景 */
+        --cell-bg-alt: #f1f3f5; /* 侧边栏/次级背景 */
+
+        --highlight: #ffcc00; /* 品牌黄 (用于 UI 高亮) */
+        --highlight-text: #000;
+
+        --text-main: #333; /* 主文字 */
+        --text-muted: #666; /* 次级文字 */
+
+        --link-color: #4a5a6a;
+        --link-hover: #ff6600; /* 活力橙 */
+
+        --pattern-col: rgba(0, 0, 0, 0.03); /* 纹理颜色 */
+
+        /* Canvas 专属颜色 (Dino/iPod 风格) */
+        --canvas-bg: #f7f7f7; /* 极简灰白背景 */
+        --canvas-line: #535353; /* 经典的深灰色像素 */
+        --canvas-accent: #ff6600; /* 主角颜色 */
+
+        --font-stack: "Verdana", "Geneva", sans-serif;
+        --font-mono: "JetBrains Mono", "Courier New", monospace;
+      }
+
+      /* 暗色模式 (Dark Mode Overrides) */
+      [data-theme="dark"] {
+        --bg-color: #111;
+        --container-bg: #444;
+        --border-color: #666;
+
+        --cell-bg: #1e1e1e;
+        --cell-bg-alt: #252525;
+
+        --highlight: #ffcc00; /* 保持品牌色 */
+        --highlight-text: #000;
+
+        --text-main: #ddd;
+        --text-muted: #888;
+
+        --link-color: #8ab0c0;
+        --link-hover: #ff9933;
+
+        --pattern-col: rgba(255, 255, 255, 0.05);
+
+        /* Canvas 暗色模式 - 反色 Dino 风格 */
+        --canvas-bg: #202124;
+        --canvas-line: #acacac;
+        --canvas-accent: #ff6600;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background-color: var(--bg-color);
+        background-image: radial-gradient(
+          var(--container-bg) 1px,
+          transparent 1px
+        );
+        background-size: 4px 4px;
+        font-family: var(--font-stack);
+        font-size: 11px;
+        color: var(--text-main);
+        line-height: 1.5;
+        padding: 20px 0;
+        -webkit-font-smoothing: none;
+        transition:
+          background-color 0.3s,
+          color 0.3s;
+      }
+
+      /* --- 1. UTILITIES --- */
+      .text-mono {
+        font-family: var(--font-mono);
+        font-size: 10px;
+      }
+      .upper {
+        text-transform: uppercase;
+      }
+      .bold {
+        font-weight: bold;
+      }
+      .pixel-border {
+        border: 1px solid var(--border-color);
+      }
+
+      a {
+        text-decoration: none;
+        color: var(--link-color);
+        transition: none;
+      }
+      a:hover {
+        color: var(--link-hover);
+        background: var(--cell-bg-alt);
+      }
+
+      /* --- 2. LAYOUT --- */
+      .container {
+        width: 100%;
+        max-width: 1111px;
+        margin: 0 auto;
+        background-color: var(--container-bg);
+        border: 1px solid var(--border-color);
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+
+        display: grid;
+        grid-template-columns: 160px 1fr 220px;
+        gap: 1px;
+      }
+
+      .cell {
+        background-color: var(--cell-bg);
+        overflow: hidden;
+        transition: background-color 0.3s;
+      }
+      .cell-pad {
+        padding: 12px;
+      }
+      .cell-alt {
+        background-color: var(--cell-bg-alt);
+      }
+
+      .cell-header {
+        background: var(--cell-bg-alt);
+        /* Gradient for subtle 3D feel, adapts to theme */
+        background-image: linear-gradient(
+          to bottom,
+          var(--cell-bg),
+          var(--cell-bg-alt)
+        );
+        padding: 6px 8px;
+        font-size: 10px;
+        font-weight: bold;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--container-bg);
+        letter-spacing: 1px;
+      }
+
+      /* --- 3. RESPONSIVE --- */
+      @media (max-width: 800px) {
+        body {
+          padding: 0;
+        }
+        .container {
+          border: none;
+          box-shadow: none;
+          grid-template-columns: 1fr;
+          gap: 1px;
+        }
+        .header-row {
+          order: 1;
+          height: auto;
+          min-height: 80px;
+        }
+        .header-nav {
+          position: static !important;
+          margin-top: 10px;
+          justify-content: center;
+          background: var(--cell-bg); /* Adapted */
+          border-top: 1px solid var(--border-color);
+          padding: 5px;
+        }
+        main.cell {
+          order: 2;
+        }
+        .sidebar-l {
+          order: 3;
+        }
+        .sidebar-r {
+          order: 4;
+        }
+        .footer-row {
+          order: 5;
+        }
+        .site-area {
+          padding-bottom: 0 !important;
+        }
+      }
+
+      /* --- 4. HEADER STYLES --- */
+      .header-row {
+        grid-column: 1 / -1;
+        background-color: var(--cell-bg-alt);
+        height: 90px;
+        position: relative;
+        border-bottom: 1px solid var(--border-color);
+
+        /* 斜线纹理 - 使用变量适配暗色 */
+        background-image: repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 2px,
+          var(--pattern-col) 2px,
+          var(--pattern-col) 4px
+        );
+      }
+
+      .header-top-bar {
+        height: 5px;
+        background: var(--text-main);
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .site-area {
+        position: absolute;
+        bottom: 15px;
+        left: 20px;
+        z-index: 2;
+        background: var(--cell-bg);
+        padding: 5px 12px;
+        border: 1px solid var(--border-color);
+        box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.15);
+      }
+
+      .site-title {
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 800;
+        font-size: 24px;
+        color: var(--text-main);
+        line-height: 1;
+        letter-spacing: -1px;
+        text-transform: uppercase;
+      }
+
+      .site-description {
+        font-size: 9px;
+        color: var(--text-muted);
+        font-family: var(--font-mono);
+        margin-top: 6px;
+        display: block;
+        border-top: 1px solid var(--container-bg);
+        padding-top: 4px;
+      }
+
+      /* --- 5. INTEGRATED NAVIGATION (Micro Nav) --- */
+      .header-nav {
+        position: absolute;
+        bottom: 15px;
+        right: 20px;
+        display: flex;
+        gap: 4px;
+        background: var(--cell-bg);
+        padding: 4px;
+        border: 1px solid var(--border-color);
+      }
+
+      .nav-btn {
+        background: var(--cell-bg);
+        border: 1px solid var(--container-bg);
+        color: var(--text-main);
+        font-size: 10px;
+        font-weight: bold;
+        text-transform: uppercase;
+        padding: 4px 10px;
+        cursor: pointer;
+        font-family: var(--font-stack);
+        box-shadow: 1px 1px 0 var(--container-bg);
+        transition: all 0s;
+      }
+
+      .nav-btn:hover,
+      .nav-btn.active {
+        background: var(--highlight);
+        color: var(--highlight-text);
+        border-color: var(--border-color);
+        box-shadow: 1px 1px 0 var(--border-color);
+        transform: translate(-1px, -1px);
+      }
+
+      /* --- 6. CONTENT STYLES --- */
+      .post-card {
+        border-bottom: 1px solid var(--container-bg);
+        margin-bottom: 0;
+        background: var(--cell-bg);
+        padding-bottom: 20px;
+      }
+      .post-card:last-child {
+        border-bottom: none;
+      }
+
+      .post-hero-img-box {
+        width: 100%;
+        height: 220px;
+        overflow: hidden;
+        position: relative;
+        background: var(--cell-bg-alt);
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .post-hero-canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+        image-rendering: pixelated;
+      }
+
+      .post-overlay-cat {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: var(--text-main);
+        color: var(--cell-bg);
+        padding: 3px 6px;
+        font-size: 9px;
+        font-family: var(--font-mono);
+        border: 1px solid var(--cell-bg);
+        z-index: 2;
+        box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
+      }
+
+      .post-body {
+        padding: 15px 20px 0 20px;
+      }
+
+      .post-title {
+        font-size: 16px;
+        font-weight: bold;
+        color: var(--text-main);
+        margin-bottom: 6px;
+        letter-spacing: -0.5px;
+      }
+
+      .post-card:hover .post-title {
+        color: var(--link-hover);
+      }
+
+      .post-meta {
+        font-size: 9px;
+        color: var(--text-muted);
+        font-family: var(--font-mono);
+        margin-bottom: 10px;
+      }
+
+      .post-excerpt {
+        color: var(--text-muted);
+        font-size: 11px;
+        line-height: 1.6;
+        margin-bottom: 12px;
+      }
+
+      .btn-read {
+        display: inline-block;
+        background: var(--cell-bg);
+        border: 1px solid var(--container-bg);
+        color: var(--text-main);
+        padding: 3px 8px;
+        font-size: 9px;
+        cursor: pointer;
+        box-shadow: 1px 1px 0 var(--container-bg);
+      }
+      .btn-read:hover {
+        background: var(--highlight);
+        border-color: var(--border-color);
+        color: var(--highlight-text);
+        box-shadow: 1px 1px 0 var(--border-color);
+      }
+
+      /* Comments & Form Styles */
+      .comment-box {
+        margin-top: 30px;
+        border-top: 1px dotted var(--container-bg);
+        padding-top: 20px;
+        background: var(--cell-bg);
+        padding-left: 20px;
+        padding-right: 20px;
+        padding-bottom: 20px;
+      }
+      .comment-header-title {
+        font-weight: bold;
+        font-size: 11px;
+        margin-bottom: 15px;
+        color: var(--text-main);
+        background: var(--cell-bg-alt);
+        display: inline-block;
+        padding: 2px 6px;
+      }
+      .comment-item {
+        margin-bottom: 15px;
+        font-family: var(--font-stack);
+        font-size: 10px;
+      }
+      .comment-head {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 4px;
+        border-bottom: 1px solid var(--cell-bg-alt);
+        padding-bottom: 2px;
+      }
+      .comment-user {
+        font-weight: bold;
+        color: var(--text-main);
+      }
+      .comment-date {
+        color: var(--text-muted);
+        font-family: var(--font-mono);
+      }
+      .comment-text {
+        color: var(--text-muted);
+        line-height: 1.4;
+      }
+      .comment-reply-list {
+        margin-left: 25px;
+        margin-top: 10px;
+        padding-left: 10px;
+        border-left: 1px dotted var(--container-bg);
+      }
+
+      .comment-form-area {
+        margin-top: 25px;
+        background: var(--cell-bg-alt);
+        padding: 15px;
+        border: 1px solid var(--container-bg);
+      }
+      .form-row {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+      .form-input {
+        flex: 1;
+        border: 1px solid var(--container-bg);
+        padding: 6px;
+        font-size: 10px;
+        font-family: var(--font-mono);
+        background: var(--cell-bg);
+        color: var(--text-main);
+      }
+      .form-submit {
+        background: var(--highlight);
+        border: 1px solid var(--border-color);
+        color: var(--highlight-text);
+        font-weight: bold;
+        padding: 0 20px;
+        cursor: pointer;
+        font-size: 10px;
+        flex: 0 0 auto;
+        box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
+      }
+      .form-submit:hover {
+        background: var(--cell-bg);
+        color: var(--text-main);
+        transform: translate(1px, 1px);
+        box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.1);
+      }
+
+      /* Pagination Styles */
+      .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+        padding: 20px 0;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        border-top: 1px solid var(--container-bg);
+        background: var(--cell-bg);
+        margin-top: 1px;
+      }
+      .page-btn {
+        border: 1px solid var(--container-bg);
+        padding: 4px 8px;
+        cursor: pointer;
+        color: var(--text-muted);
+        background: var(--cell-bg);
+        text-decoration: none;
+      }
+      .page-btn:hover,
+      .page-btn.active {
+        border-color: var(--border-color);
+        background: var(--highlight);
+        color: var(--highlight-text);
+      }
+
+      /* Sidebar Elements */
+      .menu-link {
+        display: block;
+        padding: 6px 10px;
+        border-bottom: 1px solid var(--cell-bg-alt);
+        color: var(--text-muted);
+      }
+      .menu-link:hover {
+        background: var(--text-main);
+        color: var(--cell-bg);
+        border-left: 4px solid var(--highlight);
+      }
+
+      .calendar-3d-wrapper {
+        background: var(--cell-bg-alt);
+        border: 1px solid var(--cell-bg);
+        border-right-color: var(--container-bg);
+        border-bottom-color: var(--container-bg);
+        padding: 6px;
+        font-family: var(--font-mono);
+      }
+      .cal-nav-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+        background: var(--text-main);
+        color: var(--cell-bg);
+        padding: 2px;
+        border: 1px solid var(--border-color);
+        box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.1);
+      }
+      .cal-btn {
+        background: var(--container-bg);
+        border: 1px solid var(--cell-bg);
+        border-right-color: var(--text-main);
+        border-bottom-color: var(--text-main);
+        color: var(--cell-bg);
+        font-size: 9px;
+        width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        line-height: 1;
+      }
+      .cal-btn:active {
+        border: 1px solid var(--text-main);
+        border-right-color: var(--cell-bg);
+        border-bottom-color: var(--cell-bg);
+        background: var(--text-muted);
+      }
+      .calendar-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 2px;
+        font-size: 9px;
+        text-align: center;
+      }
+      .calendar-table th {
+        font-weight: normal;
+        color: var(--text-muted);
+        font-size: 8px;
+      }
+      .calendar-table td {
+        background: var(--cell-bg);
+        border: 1px solid var(--cell-bg);
+        border-right-color: var(--container-bg);
+        border-bottom-color: var(--container-bg);
+        color: var(--text-main);
+        padding: 2px;
+        cursor: pointer;
+      }
+      .calendar-table td:hover {
+        background: var(--cell-bg-alt);
+        color: var(--link-hover);
+      }
+      .cal-today {
+        background: var(--highlight) !important;
+        color: var(--highlight-text) !important;
+        font-weight: bold;
+        border: 1px solid var(--border-color) !important;
+        box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.2);
+      }
+      .cal-has-post {
+        background-color: var(--link-color) !important;
+        color: var(--cell-bg) !important;
+        font-weight: bold;
+        border: 1px solid var(--text-main) !important;
+        opacity: 0.8;
+      }
+
+      /* iPod Player */
+      .pod-player {
+        background: var(--cell-bg);
+        border: 1px solid var(--container-bg);
+        border-radius: 4px;
+        padding: 10px;
+        box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
+        text-align: center;
+      }
+      .pod-screen {
+        background: var(--cell-bg-alt);
+        border: 1px solid var(--container-bg);
+        border-radius: 2px;
+        padding: 6px;
+        margin-bottom: 10px;
+        font-family: var(--font-mono);
+        font-size: 9px;
+        color: var(--text-muted);
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.05);
+      }
+      .pod-wheel {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: var(--cell-bg-alt);
+        border: 1px solid var(--container-bg);
+        margin: 0 auto;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .pod-btn-center {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--cell-bg);
+        border: 1px solid var(--container-bg);
+        box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+      }
+      .pod-btn-center:active {
+        background: var(--cell-bg-alt);
+        box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.1);
+      }
+      .pod-control-icon {
+        position: absolute;
+        font-size: 8px;
+        color: var(--text-muted);
+        font-weight: bold;
+        font-family: sans-serif;
+        cursor: pointer;
+      }
+      .pod-top {
+        top: 4px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      .pod-bottom {
+        bottom: 4px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      .pod-left {
+        left: 4px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+      .pod-right {
+        right: 4px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+
+      .ad-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4px;
+        margin-bottom: 10px;
+      }
+      .ad-box {
+        background: var(--cell-bg-alt);
+        border: 1px solid var(--container-bg);
+        height: 31px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 8px;
+        color: var(--text-muted);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+      }
+      .ad-box:hover {
+        border-color: var(--border-color);
+        color: var(--highlight-text);
+        background: var(--highlight);
+      }
+      .scanlines-sm {
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 2px,
+          var(--pattern-col) 2px,
+          var(--pattern-col) 4px
+        );
+        pointer-events: none;
+      }
+
+      .emoji-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+      }
+      .emoji-badge {
+        aspect-ratio: 1;
+        background: var(--cell-bg);
+        border: 1px solid var(--container-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        cursor: pointer;
+        box-shadow: 1px 1px 0 var(--container-bg);
+        transition: transform 0.1s;
+        filter: grayscale(100%);
+      }
+      .emoji-badge:hover {
+        background: var(--cell-bg-alt);
+        border-color: var(--text-muted);
+        filter: grayscale(0%);
+        transform: translate(-1px, -1px);
+      }
+
+      .counter-box {
+        display: flex;
+        gap: 2px;
+        justify-content: center;
+        background: var(--cell-bg);
+        padding: 4px;
+        border: 1px solid var(--container-bg);
+        margin-bottom: 8px;
+      }
+      .counter-digit {
+        background: var(--cell-bg);
+        color: var(--text-main);
+        font-family: var(--font-mono);
+        font-weight: bold;
+        font-size: 11px;
+        width: 16px;
+        text-align: center;
+        border: 1px solid var(--container-bg);
+        border-bottom: 2px solid var(--container-bg);
+        border-radius: 2px;
+      }
+      .stat-row {
+        display: flex;
+        justify-content: space-between;
+        font-family: var(--font-mono);
+        font-size: 9px;
+        color: var(--text-muted);
+        border-bottom: 1px dotted var(--container-bg);
+        padding: 2px 0;
+      }
+
+      .footer-row {
+        grid-column: 1 / -1;
+        background: var(--cell-bg-alt);
+        color: var(--text-muted);
+        padding: 15px;
+        text-align: center;
+        border-top: 1px solid var(--border-color);
+        font-family: var(--font-mono);
+        font-size: 9px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- HEADER -->
+      <header class="header-row">
+        <div class="header-top-bar"></div>
+        <div class="logo-area">
+          <div class="logo-main">[米随随] s5s5</div>
+          <div class="logo-sub">// 基于人类交互 / 想象决定应用</div>
+        </div>
+        <nav class="header-nav">
+          <button class="nav-btn" id="theme-toggle">THEME: AUTO</button>
+          <button class="nav-btn active">Home</button>
+          <button class="nav-btn">First Category</button>
+          <button class="nav-btn">Other</button>
+          <button class="nav-btn">About Me</button>
+        </nav>
+      </header>
+
+      <!-- LEFT SIDEBAR -->
+      <aside class="cell sidebar-l">
+        <div class="cell-header">:: MUSIC</div>
+        <div
+          class="cell-pad"
+          style="background: var(--cell-bg-alt); padding: 10px"
+        >
+          <div class="pod-player">
+            <div class="pod-screen">
+              <marquee scrollamount="2">Song: Lofi_Dream.mp3</marquee>
+            </div>
+            <div class="pod-wheel">
+              <div class="pod-control-icon pod-top">MENU</div>
+              <div class="pod-control-icon pod-bottom">||</div>
+              <div class="pod-control-icon pod-left">|&lt;</div>
+              <div class="pod-control-icon pod-right">&gt;|</div>
+              <button class="pod-btn-center"></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="cell-header" style="margin-top: 1px">:: BADGES</div>
+        <div class="cell-pad cell-alt">
+          <div class="emoji-grid">
+            <div class="emoji-badge" title="Cool">😎</div>
+            <div class="emoji-badge" title="Pixel Art">👾</div>
+            <div class="emoji-badge" title="Coding">💻</div>
+            <div class="emoji-badge" title="Coffee">☕</div>
+            <div class="emoji-badge" title="Music">🎵</div>
+            <div class="emoji-badge" title="Idea">💡</div>
+            <div class="emoji-badge" title="Camera">📷</div>
+            <div class="emoji-badge" title="Game">🕹️</div>
+            <div class="emoji-badge" title="Save">💾</div>
+          </div>
+        </div>
+
+        <div class="cell-header" style="margin-top: 1px">:: STATS</div>
+        <div class="cell-pad">
+          <div
+            style="
+              text-align: center;
+              font-size: 9px;
+              color: var(--text-muted);
+              margin-bottom: 4px;
+              font-family: var(--font-mono);
+            "
+          >
+            VISITORS
+          </div>
+          <div class="counter-box">
+            <span class="counter-digit">0</span
+            ><span class="counter-digit">8</span
+            ><span class="counter-digit">4</span>
+            <span class="counter-digit">2</span
+            ><span class="counter-digit">1</span
+            ><span class="counter-digit">9</span>
+          </div>
+          <div style="margin-top: 8px">
+            <div class="stat-row">
+              <span>ONLINE:</span
+              ><span style="color: var(--link-hover); font-weight: bold"
+                >12</span
+              >
+            </div>
+            <div class="stat-row"><span>TODAY:</span><span>143</span></div>
+            <div class="stat-row"><span>SINCE:</span><span>2003</span></div>
+          </div>
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              gap: 4px;
+              margin-top: 8px;
+              opacity: 0.4;
+            "
+          >
+            <div
+              style="
+                width: 10px;
+                height: 10px;
+                background: #f90;
+                border-radius: 50%;
+              "
+              title="Firefox"
+            ></div>
+            <div
+              style="
+                width: 10px;
+                height: 10px;
+                background: #09c;
+                border-radius: 50%;
+              "
+              title="IE"
+            ></div>
+            <div
+              style="
+                width: 10px;
+                height: 10px;
+                background: #d00;
+                border-radius: 50%;
+              "
+              title="Opera"
+            ></div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- CENTER MAIN CONTENT -->
+      <main class="cell" id="main-content-area">
+        <!-- JS will render Hero Posts with Canvas here -->
+      </main>
+
+      <!-- RIGHT SIDEBAR -->
+      <aside class="cell sidebar-r">
+        <div class="cell-header">:: PROFILE</div>
+        <div class="cell-pad" style="padding-bottom: 5px">
+          <div
+            style="
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              margin-bottom: 10px;
+            "
+          >
+            <div
+              style="
+                width: 80px;
+                height: 80px;
+                background: var(--cell-bg-alt);
+                border: 1px solid var(--border-color);
+                margin-bottom: 8px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                box-shadow: 2px 2px 0 var(--container-bg);
+              "
+            >
+              <span
+                style="
+                  font-family: &quot;JetBrains Mono&quot;;
+                  font-weight: 800;
+                  font-size: 20px;
+                  color: var(--text-main);
+                "
+                >S5</span
+              >
+            </div>
+            <div class="bold" style="font-size: 12px; margin-bottom: 2px">
+              Xiaochao Liu
+            </div>
+          </div>
+          <div
+            class="text-mono"
+            style="
+              font-size: 9px;
+              color: var(--text-muted);
+              line-height: 1.6;
+              border-top: 1px dotted var(--container-bg);
+              padding-top: 8px;
+            "
+          >
+            <div style="margin-bottom: 4px">> Front-end</div>
+            <div style="margin-bottom: 8px">> Loc: Chengdu, China</div>
+            <div style="display: grid; gap: 4px">
+              <a
+                href="https://linkedin.com/in/s5s5"
+                target="_blank"
+                style="
+                  display: block;
+                  background: var(--cell-bg-alt);
+                  padding: 2px 4px;
+                  border: 1px solid var(--container-bg);
+                  text-align: center;
+                "
+                >[ LinkedIn ]</a
+              >
+              <a
+                href="https://github.com/s5s5"
+                target="_blank"
+                style="
+                  display: block;
+                  background: var(--cell-bg-alt);
+                  padding: 2px 4px;
+                  border: 1px solid var(--container-bg);
+                  text-align: center;
+                "
+                >[ Github ]</a
+              >
+              <a
+                href="mailto:s5s5cn@gmail.com"
+                style="
+                  display: block;
+                  background: var(--cell-bg-alt);
+                  padding: 2px 4px;
+                  border: 1px solid var(--container-bg);
+                  text-align: center;
+                "
+                >[ Mail ]</a
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="cell-header" style="margin-top: 1px">:: CALENDAR</div>
+        <div class="cell-pad" style="padding: 10px 8px">
+          <div class="calendar-3d-wrapper">
+            <div class="cal-nav-row">
+              <button class="cal-btn">&lt;</button>
+              <span style="font-weight: bold">DEC 2025</span>
+              <button class="cal-btn">&gt;</button>
+            </div>
+            <table class="calendar-table">
+              <thead>
+                <tr>
+                  <td>S</td>
+                  <td>M</td>
+                  <td>T</td>
+                  <td>W</td>
+                  <td>T</td>
+                  <td>F</td>
+                  <td>S</td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td
+                    style="
+                      color: var(--text-muted);
+                      border-color: var(--container-bg);
+                    "
+                  >
+                    30
+                  </td>
+                  <td>1</td>
+                  <td>2</td>
+                  <td>3</td>
+                  <td>4</td>
+                  <td class="cal-has-post">5</td>
+                  <td>6</td>
+                </tr>
+                <tr>
+                  <td>7</td>
+                  <td>8</td>
+                  <td>9</td>
+                  <td>10</td>
+                  <td>11</td>
+                  <td class="cal-has-post">12</td>
+                  <td>13</td>
+                </tr>
+                <tr>
+                  <td>14</td>
+                  <td>15</td>
+                  <td>16</td>
+                  <td>17</td>
+                  <td>18</td>
+                  <td class="cal-has-post">19</td>
+                  <td>20</td>
+                </tr>
+                <tr>
+                  <td>21</td>
+                  <td>22</td>
+                  <td class="cal-has-post">23</td>
+                  <td>24</td>
+                  <td class="cal-has-post">25</td>
+                  <td class="cal-today">26</td>
+                  <td>27</td>
+                </tr>
+                <tr>
+                  <td>28</td>
+                  <td>29</td>
+                  <td>30</td>
+                  <td>31</td>
+                  <td
+                    style="
+                      color: var(--text-muted);
+                      border-color: var(--container-bg);
+                    "
+                  >
+                    1
+                  </td>
+                  <td
+                    style="
+                      color: var(--text-muted);
+                      border-color: var(--container-bg);
+                    "
+                  >
+                    2
+                  </td>
+                  <td
+                    style="
+                      color: var(--text-muted);
+                      border-color: var(--container-bg);
+                    "
+                  >
+                    3
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="cell-header" style="margin-top: 1px">:: LINK</div>
+        <div class="cell-pad cell-alt">
+          <div class="ad-grid">
+            <div class="ad-box">
+              <div class="scanlines-sm"></div>
+              <span>YOUR_LINK</span>
+            </div>
+            <div class="ad-box">
+              <div class="scanlines-sm"></div>
+              <span>PIXEL_ART</span>
+            </div>
+            <div class="ad-box">
+              <div class="scanlines-sm"></div>
+              <span>K10K.NET</span>
+            </div>
+            <div class="ad-box">
+              <div class="scanlines-sm"></div>
+              <span>DESIGN</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- FOOTER -->
+      <footer class="footer-row">
+        &copy; 2024-2025 [米随随] s5s5. ALL RIGHTS RESERVED. <br />
+        DESIGNED FOR HUMAN INTERACTION.
+      </footer>
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+      // --- THEME LOGIC ---
+      const themeBtn = document.getElementById("theme-toggle");
+      const htmlEl = document.documentElement;
+      let currentThemeMode = localStorage.getItem("themeMode") || "auto";
+
+      function applyTheme() {
+        let themeToApply = currentThemeMode;
+        if (currentThemeMode === "auto") {
+          const systemDark = window.matchMedia(
+            "(prefers-color-scheme: dark)"
+          ).matches;
+          themeToApply = systemDark ? "dark" : "light";
+          themeBtn.innerText = "THEME: AUTO";
+        } else {
+          themeBtn.innerText = "THEME: " + currentThemeMode.toUpperCase();
+        }
+
+        if (themeToApply === "dark") {
+          htmlEl.setAttribute("data-theme", "dark");
+        } else {
+          htmlEl.removeAttribute("data-theme");
+        }
+
+        setTimeout(redrawAllCanvases, 50); // slight delay to ensure CSS applied
+      }
+
+      themeBtn.addEventListener("click", () => {
+        if (currentThemeMode === "auto") currentThemeMode = "light";
+        else if (currentThemeMode === "light") currentThemeMode = "dark";
+        else currentThemeMode = "auto";
+        localStorage.setItem("themeMode", currentThemeMode);
+        applyTheme();
+      });
+
+      window
+        .matchMedia("(prefers-color-scheme: dark)")
+        .addEventListener("change", () => {
+          if (currentThemeMode === "auto") applyTheme();
+        });
+
+      function getCSSVal(name) {
+        return getComputedStyle(document.documentElement)
+          .getPropertyValue(name)
+          .trim();
+      }
+
+      const posts = [
+        {
+          title: "探索数字边界",
+          date: "2024-10-25",
+          cat: "First Category",
+          weather: "Lightning",
+          excerpt:
+            "沉浸在像素完美的失落艺术中。有限的分辨率如何在现代网页设计中激发无限的想象力。"
+        },
+        {
+          title: "信息的架构",
+          date: "2024-10-24",
+          cat: "First Category",
+          weather: "Fog",
+          excerpt:
+            "构建经得起时间考验的结构。为什么网格布局不仅仅是一个CSS属性，更是一种哲学。"
+        },
+        {
+          title: "午夜编程时光",
+          date: "2024-10-23",
+          cat: "First Category",
+          weather: "Rain",
+          excerpt:
+            "凌晨3点有一种独特的寂静。唯一的声音是键盘的机械敲击声和服务器的嗡嗡声。"
+        },
+        {
+          title: "阴天随笔",
+          date: "2024-10-22",
+          cat: "Life",
+          weather: "Overcast",
+          excerpt: "一个灰色的下午，适合思考和发呆。"
+        },
+        {
+          title: "多云转晴",
+          date: "2024-10-21",
+          cat: "Design",
+          weather: "Cloudy",
+          excerpt: "云层的变化给天空带来了丰富的层次感。"
+        },
+        {
+          title: "复古游戏复兴",
+          date: "2024-10-22",
+          cat: "First Category",
+          weather: "Sunny",
+          excerpt:
+            "为什么我们不断回顾8位经典。这不仅仅是怀旧，而是关于纯粹的游戏机制。"
+        },
+        {
+          title: "Markdown 样式全功能展示",
+          date: "2024-10-20",
+          cat: "Docs",
+          weather: "Snow",
+          comments: [
+            {
+              user: "PixelFan_01",
+              date: "2024-10-21 10:00",
+              content: "这篇文章排版很棒！很有 K10k 当年的感觉。",
+              replies: [
+                {
+                  user: "s5s5",
+                  date: "2024-10-21 10:05",
+                  content: "谢谢支持！我会继续保持这种风格。",
+                  isAuthor: true
+                }
+              ]
+            },
+            {
+              user: "Guest_88",
+              date: "2024-10-22 14:20",
+              content: "代码块的配色也很舒服，是 Monokai 吗？",
+              replies: []
+            }
+          ],
+          excerpt: `
+                <p style="margin-bottom:8px;">这是一篇展示常用 <strong>Markdown</strong> 语法的测试文章。</p>
+                <h3 style="font-size:14px; font-weight:bold; margin:15px 0 8px 0; border-bottom:1px solid var(--container-bg); padding-bottom:4px;">1. 文本样式</h3>
+                <p>我们可以使用 <strong>加粗 (Bold)</strong>，<em>斜体 (Italic)</em>，以及 <span style="text-decoration:line-through; color:var(--text-muted);">删除线 (Strike)</span>。</p>
+                <h3 style="font-size:14px; font-weight:bold; margin:15px 0 8px 0; border-bottom:1px solid var(--container-bg); padding-bottom:4px;">2. 列表展示</h3>
+                <ul style="list-style-type: square; margin-left: 20px; color:var(--text-muted); margin-bottom:10px;">
+                    <li>第一点：结构化数据的重要性</li>
+                    <li>第二点：清晰的排版提升阅读体验</li>
+                </ul>
+                <h3 style="font-size:14px; font-weight:bold; margin:15px 0 8px 0; border-bottom:1px solid var(--container-bg); padding-bottom:4px;">3. 代码块</h3>
+                <div style="background:var(--cell-bg-alt); color:var(--text-main); border:1px solid var(--container-bg); padding:12px; font-family:'JetBrains Mono', monospace; font-size:10px; margin:10px 0; border-radius:4px; overflow-x:auto;">
+<span style="color:#cc99cd;">function</span> <span style="color:#61aeee;">init</span>() {
+  <span style="color:#e6c07b;">console</span>.<span style="color:#61aeee;">log</span>(<span style="color:#98c379;">\`Ready\`</span>);
+}
+                </div>
+            `
+        }
+      ];
+
+      const mainArea = document.getElementById("main-content-area");
+      const weatherMap = {
+        Lightning: "闪电",
+        Fog: "雾",
+        Rain: "雨",
+        Sunny: "晴",
+        Snow: "雪",
+        Overcast: "阴",
+        Cloudy: "多云"
+      };
+
+      function renderComments(comments) {
+        if (!comments || comments.length === 0) return "";
+        return comments
+          .map(
+            (c) => `
+            <div class="comment-item">
+                <div class="comment-head">
+                    <span class="comment-user">${c.user} ${c.isAuthor ? '<span style="background:var(--text-main);color:var(--cell-bg);padding:0 2px;font-size:8px;">AUTHOR</span>' : ""}</span>
+                    <span class="comment-date">${c.date}</span>
+                </div>
+                <div class="comment-text">${c.content}</div>
+                ${c.replies && c.replies.length > 0 ? `<div class="comment-reply-list">${renderComments(c.replies)}</div>` : ""}
+            </div>
+        `
+          )
+          .join("");
+      }
+
+      // --- RENDER POSTS ---
+      posts.forEach((post, index) => {
+        const card = document.createElement("div");
+        card.className = "post-card";
+
+        let commentsHTML = "";
+        if (post.comments) {
+          commentsHTML = `
+                <div class="comment-box">
+                    <div class="comment-header-title">:: 评论列表 (${post.comments.length})</div>
+                    ${renderComments(post.comments)}
+                    <div class="comment-form-area">
+                        <div style="font-weight:bold; font-size:10px; margin-bottom:8px; color:var(--text-muted);">LEAVE A REPLY:</div>
+                        <div class="form-row"><input type="text" class="form-input" placeholder="Name"><input type="email" class="form-input" placeholder="Email"></div>
+                        <div class="form-row"><input type="text" class="form-input" placeholder="Website (http://)"><button class="form-submit">SUBMIT</button></div>
+                        <textarea class="form-input" style="width:100%; margin-top:5px; height:60px;" placeholder="Your Message..."></textarea>
+                    </div>
+                </div>
+            `;
+        }
+
+        const canvasId = `hero-canvas-${index}`;
+        const weatherCN = weatherMap[post.weather] || "";
+        const weatherLabel = post.weather
+          ? `${weatherCN} ${post.weather.toUpperCase()}`
+          : post.cat;
+
+        card.innerHTML = `
+            <div class="post-hero-img-box">
+                <div class="post-overlay-cat">${weatherLabel}</div>
+                <canvas id="${canvasId}" class="post-hero-canvas"></canvas>
+            </div>
+            <div class="post-body">
+                <div class="post-title">${post.title}</div>
+                <div class="post-meta">POSTED ON ${post.date} // BY s5s5 // IN ${post.cat} // 3 评论</div>
+                <div class="post-excerpt">${post.excerpt}</div>
+                <button class="btn-read">阅读全文 &gt;&gt;</button>
+            </div>
+            ${commentsHTML}
+        `;
+        mainArea.appendChild(card);
+      });
+
+      // Pagination
+      const pagination = document.createElement("div");
+      pagination.className = "pagination";
+      pagination.innerHTML = `<a href="#" class="page-btn">[PREV]</a><a href="#" class="page-btn active">1</a><a href="#" class="page-btn">2</a><a href="#" class="page-btn">3</a><span style="padding:4px;">...</span><a href="#" class="page-btn">[NEXT]</a>`;
+      mainArea.appendChild(pagination);
+
+      document.querySelectorAll(".nav-btn").forEach((item) => {
+        item.addEventListener("click", function () {
+          document
+            .querySelectorAll(".nav-btn")
+            .forEach((n) => n.classList.remove("active"));
+          this.classList.add("active");
+        });
+      });
+
+      // --- CANVAS LOGIC (Dino / iPod / Minimalist) ---
+
+      function redrawAllCanvases() {
+        posts.forEach((post, index) => {
+          const canvas = document.getElementById(`hero-canvas-${index}`);
+          if (canvas) {
+            // Safeguard against zero size
+            if (canvas.parentElement.offsetWidth === 0) return;
+
+            let wType = (post.weather || "Sunny").toLowerCase();
+            if (wType === "rain") wType = "rainy";
+            if (wType === "snow") wType = "snowy";
+            if (wType === "fog") wType = "foggy";
+
+            const colors = {
+              bg: getCSSVal("--canvas-bg"),
+              line: getCSSVal("--canvas-line"),
+              accent: getCSSVal("--canvas-accent")
+            };
+
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.parentElement.getBoundingClientRect();
+
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+
+            const ctx = canvas.getContext("2d");
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.scale(dpr, dpr);
+
+            drawDinoStyleScene(ctx, rect.width, rect.height, wType, colors);
+          }
+        });
+      }
+
+      function drawDinoStyleScene(ctx, w, h, weather, colors) {
+        // Clear
+        ctx.fillStyle = colors.bg;
+        ctx.fillRect(0, 0, w, h);
+
+        // Ground Line (Single Pixel Line)
+        const groundY = h - 20;
+        ctx.fillStyle = colors.line;
+        ctx.fillRect(0, groundY, w, 1);
+
+        // Draw some "noise" on ground
+        for (let i = 0; i < w; i += 10) {
+          if (Math.random() > 0.6) {
+            const nw = Math.random() * 4 + 1;
+            ctx.fillRect(i, groundY + 2 + Math.random() * 5, nw, 1);
+          }
+        }
+
+        // --- Weather Elements & Sky ---
+        drawRetroWeather(ctx, w, h, weather, colors);
+
+        // --- Scenery (Cacti / Blocks) ---
+        // Simple 1-bit style obstacles
+        const numProps = 2 + Math.floor(Math.random() * 3);
+        // Avoid the area where hero stands (approx 10% to 30% width)
+        const heroZoneStart = w * 0.1;
+        const heroZoneEnd = w * 0.3;
+
+        for (let i = 0; i < numProps; i++) {
+          let px = Math.random() * w;
+          // Retry if in hero zone
+          if (px > heroZoneStart && px < heroZoneEnd) px += w * 0.3;
+          if (px > w) px -= w;
+
+          // Draw generic block or "cactus"
+          const ph = 10 + Math.random() * 15;
+          const pw = 6 + Math.random() * 6;
+          ctx.fillStyle = colors.line;
+          ctx.fillRect(px, groundY - ph, pw, ph);
+          // Arms for cactus look?
+          if (Math.random() > 0.5) {
+            ctx.fillRect(px - 3, groundY - ph + 5, 3, 4);
+            ctx.fillRect(px - 3, groundY - ph + 2, 1, 3);
+          }
+        }
+
+        // --- Characters (2 to 6 people) ---
+        const peopleCount = 2 + Math.floor(Math.random() * 5); // 2 to 6
+
+        // Ensure at least one is in the "Hero Zone"
+        let positions = [];
+        // First person (Hero) position
+        positions.push(w * 0.2);
+
+        // Random positions for others
+        for (let i = 1; i < peopleCount; i++) {
+          positions.push(Math.random() * (w - 40) + 20);
+        }
+
+        positions.forEach((px, i) => {
+          const isHero = i === 0;
+          const color = isHero ? colors.accent : colors.line;
+          // Draw Sprite
+          drawPixelChar(ctx, px, groundY, color, isHero);
+        });
+      }
+
+      function drawPixelChar(ctx, x, y, color, isHero) {
+        const size = 3; // Pixel scale size
+        ctx.fillStyle = color;
+
+        // Simple Dino/Man sprite 8x10 grid (approx)
+        // Head
+        ctx.fillRect(x, y - 10 * size, 6 * size, 3 * size);
+        // Eye (negative space)
+        if (isHero) {
+          ctx.clearRect(x + 4 * size, y - 9 * size, 1 * size, 1 * size);
+        }
+
+        // Neck/Body
+        ctx.fillRect(x + 2 * size, y - 7 * size, 2 * size, 4 * size);
+        // Body Trunk
+        ctx.fillRect(x, y - 5 * size, 5 * size, 3 * size);
+
+        // Legs
+        // Left
+        ctx.fillRect(x + 1 * size, y - 2 * size, 1 * size, 2 * size);
+        // Right
+        ctx.fillRect(x + 3 * size, y - 2 * size, 1 * size, 2 * size);
+
+        // Arms (if hero, maybe raise one?)
+        if (isHero) {
+          ctx.fillRect(x + 5 * size, y - 5 * size, 2 * size, 1 * size);
+          ctx.fillRect(x + 6 * size, y - 6 * size, 1 * size, 1 * size);
+        } else {
+          ctx.fillRect(x + 1 * size, y - 4 * size, 3 * size, 1 * size);
+        }
+      }
+
+      function drawRetroWeather(ctx, w, h, weather, colors) {
+        ctx.fillStyle = colors.line;
+
+        // Sun (if sunny)
+        if (weather === "sunny") {
+          const sunX = w - 50;
+          const sunY = 40;
+          // Simple pixel circle/square
+          ctx.fillRect(sunX, sunY, 12, 12);
+          // Rays
+          ctx.fillRect(sunX - 4, sunY + 4, 20, 4);
+          ctx.fillRect(sunX + 4, sunY - 4, 4, 20);
+        }
+
+        // Rain
+        if (weather === "rainy") {
+          for (let i = 0; i < 40; i++) {
+            const rx = Math.random() * w;
+            const ry = Math.random() * h;
+            ctx.fillRect(rx, ry, 1, 6); // Vertical line
+          }
+        }
+
+        // Snow
+        if (weather === "snowy") {
+          for (let i = 0; i < 60; i++) {
+            const sx = Math.random() * w;
+            const sy = Math.random() * h;
+            ctx.fillRect(sx, sy, 2, 2); // Dots
+          }
+        }
+
+        // Clouds (Cloudy/Overcast)
+        if (weather === "cloudy" || weather === "overcast") {
+          // Draw blocky clouds
+          const cloudCount = weather === "overcast" ? 8 : 3;
+          ctx.fillStyle = colors.line;
+          ctx.globalAlpha = 0.2; // Faint clouds
+          for (let i = 0; i < cloudCount; i++) {
+            let cx = Math.random() * w;
+            let cy = Math.random() * (h / 2);
+            let cw = 30 + Math.random() * 20;
+            ctx.fillRect(cx, cy, cw, 10);
+            ctx.fillRect(cx + 10, cy - 8, cw - 15, 8);
+          }
+          ctx.globalAlpha = 1.0;
+        }
+
+        // Lightning (Invert)
+        if (weather === "lightning") {
+          // Flash effect is hard in static canvas, we draw a jagged line
+          ctx.strokeStyle = colors.accent;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          let lx = Math.random() * w;
+          let ly = 0;
+          ctx.moveTo(lx, ly);
+          while (ly < h - 20) {
+            lx += (Math.random() - 0.5) * 30;
+            ly += 20;
+            ctx.lineTo(lx, ly);
+          }
+          ctx.stroke();
+        }
+
+        // Fog (Dither)
+        if (weather === "foggy") {
+          ctx.fillStyle = colors.line;
+          ctx.globalAlpha = 0.1;
+          for (let x = 0; x < w; x += 4) {
+            ctx.fillRect(x, 0, 1, h);
+          }
+          ctx.globalAlpha = 1.0;
+        }
+      }
+
+      // Initial Trigger
+      window.onload = function () {
+        applyTheme();
+      };
+
+      // Fallback if onload already fired
+      if (document.readyState === "complete") {
+        applyTheme();
+      }
+    </script>
+  </body>
+</html>

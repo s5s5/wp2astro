@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[米随随] s5s5 // HUMAN_INTERFACE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap');
+
+        :root {
+            --bg-dark: #0a0a0a;
+            --bg-mid: #1a1b1e;
+            --accent: #00bac4;
+            --text-dim: #666;
+            --text-main: #b0b0b0;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-light: rgba(255, 255, 255, 0.04);
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'JetBrains+Mono', monospace;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            font-size: 12px;
+        }
+
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            background-image:
+                    linear-gradient(to right, rgba(255,255,255,0.01) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(255,255,255,0.01) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .top-nav {
+            height: 60px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            justify-content: space-between;
+            background: #000;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-link {
+            padding: 0 15px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            text-decoration: none;
+            transition: color 0.2s;
+            font-size: 11px;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--accent);
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 200px 1fr 300px;
+            gap: 0;
+            flex: 1;
+            max-width: 1440px;
+            margin: 0 auto;
+            width: 100%;
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+        }
+
+        .column {
+            padding: 30px;
+        }
+
+        .sidebar-left, .sidebar-right {
+            background: var(--bg-dark);
+        }
+
+        .main-content {
+            background: var(--bg-mid);
+            color: #ccc;
+            position: relative;
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+        }
+
+        .main-content::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image:
+                    linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 20px 20px;
+            pointer-events: none;
+        }
+
+        .post-card {
+            margin-bottom: 80px;
+            border-left: 1px solid #444;
+            padding-left: 25px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .post-card:hover {
+            border-left-color: var(--accent);
+        }
+
+        .post-meta {
+            font-size: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+        }
+
+        .post-meta span.symbol {
+            color: var(--accent);
+            opacity: 0.7;
+            margin-right: 4px;
+        }
+
+        .post-meta a:hover {
+            color: var(--accent);
+        }
+
+        .post-title {
+            font-size: 22px;
+            font-weight: 400;
+            margin-bottom: 15px;
+            color: #fff;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+
+        .post-art-preview {
+            width: 100%;
+            height: 240px;
+            background: #050505;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 16px 16px 0px #000;
+        }
+
+        .post-content {
+            color: #999;
+            line-height: 1.8;
+            font-size: 13px;
+        }
+
+        /* Markdown Styles */
+        .markdown-body h3 {
+            color: #fff;
+            font-size: 16px;
+            margin: 25px 0 15px 0;
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 5px;
+        }
+
+        .markdown-body p { margin-bottom: 15px; }
+
+        .markdown-body ul, .markdown-body ol {
+            margin-bottom: 15px;
+            padding-left: 20px;
+        }
+
+        .markdown-body ul li { list-style-type: square; }
+        .markdown-body ol li { list-style-type: decimal; }
+
+        .markdown-body blockquote {
+            border-left: 3px solid var(--accent);
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.02);
+            font-style: italic;
+            margin: 20px 0;
+        }
+
+        .markdown-body code {
+            background: #000;
+            padding: 2px 5px;
+            color: var(--accent);
+            font-size: 11px;
+        }
+
+        .markdown-body pre {
+            background: #000;
+            padding: 15px;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        .markdown-body strong { color: #fff; }
+
+        /* 评论区样式 */
+        .comment-section {
+            margin-top: 60px;
+            padding-top: 40px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .comment-header {
+            font-size: 14px;
+            color: #fff;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .comment-item {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .comment-body {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-light);
+            padding: 15px;
+            font-size: 11px;
+            line-height: 1.6;
+            color: #aaa;
+        }
+
+        .comment-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 9px;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .comment-meta .author a { color: var(--accent); font-weight: bold; text-decoration: none; }
+        .comment-meta .author a:hover { text-decoration: underline; }
+
+        .comment-actions {
+            margin-top: 10px;
+            font-size: 9px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .comment-actions a {
+            color: var(--accent);
+            opacity: 0.6;
+            text-transform: uppercase;
+        }
+
+        .comment-actions a:hover { opacity: 1; }
+
+        .nested-comments {
+            margin-left: 30px;
+            margin-top: 20px;
+            padding-left: 15px;
+            border-left: 1px solid #333;
+        }
+
+        /* 留言表单 */
+        .comment-form {
+            margin-top: 40px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+            padding: 20px;
+        }
+
+        .form-title {
+            font-size: 10px;
+            color: var(--accent);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .comment-textarea {
+            width: 100%;
+            background: #000;
+            border: 1px solid #333;
+            color: #ccc;
+            padding: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            min-height: 100px;
+            margin-bottom: 15px;
+            resize: vertical;
+        }
+
+        .comment-textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .form-input {
+            background: #000;
+            border: 1px solid #333;
+            color: #ccc;
+            padding: 8px 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+        }
+
+        .form-input:focus { outline: none; border-color: var(--accent); }
+
+        .submit-btn {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 8px 25px;
+            font-size: 10px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .submit-btn:hover {
+            background: var(--accent);
+            color: #000;
+        }
+
+        canvas {
+            image-rendering: pixelated;
+            display: block;
+        }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid var(--border-light);
+            font-size: 10px;
+        }
+
+        .page-btn {
+            border: 1px solid #444;
+            padding: 4px 10px;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .page-btn:hover, .page-btn.active {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(0, 186, 196, 0.05);
+        }
+
+        .profile-section {
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+            padding: 20px;
+            background: rgba(255,255,255,0.02);
+        }
+
+        .logo-placeholder {
+            width: 60px;
+            height: 60px;
+            border: 1px solid var(--accent);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .logo-placeholder::after {
+            content: "XL";
+            font-weight: 700;
+            color: var(--accent);
+            font-size: 24px;
+        }
+
+        .calendar-container {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            padding: 15px;
+            margin-bottom: 30px;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+        }
+
+        .calendar-nav-btn {
+            cursor: pointer;
+            color: var(--accent);
+            font-size: 10px;
+            padding: 0 5px;
+            transition: opacity 0.2s;
+            user-select: none;
+        }
+
+        .calendar-nav-btn:hover {
+            opacity: 0.7;
+        }
+
+        .calendar-title {
+            font-size: 9px;
+            color: #fff;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            text-align: center;
+        }
+
+        .calendar-day {
+            font-size: 10px;
+            padding: 5px 0;
+            color: #555;
+        }
+
+        .calendar-day.active {
+            color: #bbb;
+        }
+
+        .calendar-day.today {
+            background: var(--accent);
+            color: #000;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            color: #fff;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 12px;
+            padding-bottom: 4px;
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        footer {
+            background: #000;
+            border-top: 1px solid var(--border);
+            padding: 20px;
+            text-align: center;
+            font-size: 9px;
+            color: #444;
+            letter-spacing: 1px;
+        }
+
+        @media (max-width: 1100px) {
+            .main-layout { grid-template-columns: 1fr 300px; }
+            .sidebar-left { display: none; }
+        }
+
+        @media (max-width: 850px) {
+            .main-layout { grid-template-columns: 1fr; }
+            .sidebar-right { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+
+<header class="top-nav">
+    <div class="flex flex-col">
+        <div class="font-bold tracking-tighter text-white text-base">
+            [米随随] s5s5 <span class="text-dim opacity-50 font-light text-[10px] ml-2 tracking-widest">// HUMAN_INTERFACE.v1</span>
+        </div>
+        <div class="text-[9px] text-accent opacity-60 tracking-[0.2em] hidden sm:block mt-0.5">
+            本站是基于人类交互的，您的想象决定了我们的应用！
+        </div>
+    </div>
+    <nav class="flex">
+        <a href="#" class="nav-link active">Home</a>
+        <a href="#" class="nav-link">First Category</a>
+        <a href="#" class="nav-link">Other</a>
+        <a href="#" class="nav-link">About Me</a>
+    </nav>
+    <div class="text-[9px] opacity-40 hidden lg:block">
+        STATION_0x24: ONLINE
+    </div>
+</header>
+
+<div class="main-layout">
+    <aside class="column sidebar-left">
+        <h3 class="text-white font-bold mb-4 opacity-80 text-[10px] tracking-widest uppercase text-xs">Weather_Modes</h3>
+        <a href="#" class="category-item">01. SUNNY_MODE</a>
+        <a href="#" class="category-item">02. OVERCAST_MODE</a>
+        <a href="#" class="category-item">03. CLOUDY_MODE</a>
+        <a href="#" class="category-item">04. RAINY_MODE</a>
+        <a href="#" class="category-item">05. SNOWY_MODE</a>
+        <a href="#" class="category-item">06. FOGGY_MODE</a>
+
+        <div class="mt-20">
+            <div class="text-[8px] text-dim mb-2 uppercase">System Load</div>
+            <div class="w-full bg-white/5 h-1">
+                <div class="bg-cyan-500 h-full w-2/3"></div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="column main-content">
+        <!-- 文章 1 -->
+        <article class="post-card">
+            <div class="post-meta">
+                <div><span class="symbol">//</span><a href="#">s5s5</a></div>
+                <div><span class="symbol">[</span><span>2024-05-16</span><span class="symbol">]</span></div>
+                <div><span class="symbol">></span><a href="#" class="underline">First Category</a></div>
+                <div><span class="symbol">::</span><a href="#">留下评论</a></div>
+            </div>
+            <h2 class="post-title">娃儿班上的家长把班主任气走了</h2>
+
+            <div class="post-art-preview">
+                <canvas class="art-canvas" data-weather="foggy"></canvas>
+                <div class="absolute top-2 left-2 bg-black text-accent border border-accent/30 px-2 py-0.5 text-[8px]">LOG.VOID_V1</div>
+            </div>
+
+            <div class="post-content">
+                <p>今天班级群里发生的一幕让人唏嘘。沟通的错位和情绪的堆叠，最终让那位尽职的班主任选择了离开。算法可以模拟逻辑，但模拟不了人心的复杂。</p>
+            </div>
+            <a href="#" class="read-more px-4 py-1 border border-dim text-[10px] uppercase mt-4 inline-block">Read Entry</a>
+        </article>
+
+        <!-- 文章 2 -->
+        <article class="post-card">
+            <div class="post-meta">
+                <div><span class="symbol">//</span><a href="#">s5s5</a></div>
+                <div><span class="symbol">[</span><span>2024-05-16</span><span class="symbol">]</span></div>
+                <div><span class="symbol">></span><a href="#" class="underline">First Category</a></div>
+                <div><span class="symbol">::</span><a href="#">留下评论</a></div>
+            </div>
+            <h2 class="post-title">被 DDoS 了</h2>
+
+            <div class="post-art-preview">
+                <canvas class="art-canvas" data-weather="overcast"></canvas>
+                <div class="absolute top-2 left-2 bg-black text-accent border border-accent/30 px-2 py-0.5 text-[8px]">NET.SHOCK_V1</div>
+            </div>
+
+            <div class="post-content">
+                <p>昨晚流量异常暴涨。在流量的洪峰面前，所有的优化看起来都那么脆弱。防护、拦截、切换，这是一场没有消烟的消耗战。</p>
+            </div>
+            <a href="#" class="read-more px-4 py-1 border border-dim text-[10px] uppercase mt-4 inline-block">Read Entry</a>
+        </article>
+
+        <!-- 长文章 -->
+        <article class="post-card" id="long-post">
+            <div class="post-meta">
+                <div><span class="symbol">//</span><a href="#">s5s5</a></div>
+                <div><span class="symbol">[</span><span>2024-05-16</span><span class="symbol">]</span></div>
+                <div><span class="symbol">></span><a href="#" class="underline">First Category</a></div>
+                <div><span class="symbol">::</span><a href="#">留下评论</a></div>
+            </div>
+            <h2 class="post-title">计算美学：从代码到视觉的映射逻辑</h2>
+
+            <div class="post-art-preview">
+                <canvas class="art-canvas" data-weather="cloudy"></canvas>
+                <div class="absolute top-2 left-2 bg-black text-accent border border-accent/30 px-2 py-0.5 text-[8px]">LAB.SPEC_V3</div>
+            </div>
+
+            <div class="post-content markdown-body">
+                <p>在数字媒介中，视觉不再仅仅是画笔的产物，而是<strong>数学与概率</strong>在时域上的投影。</p>
+
+                <h3>1. 系统的构成</h3>
+                <p>构建一个生成艺术系统需要考虑以下三个核心要素：</p>
+                <ul>
+                    <li><strong>伪随机种子</strong>：确保结果的确定性与可复现性。</li>
+                    <li><strong>几何原语</strong>：如像素块、线框、同心圆等基础元素。</li>
+                    <li><strong>约束系统</strong>：决定元素在画布上的分布密度与交叠逻辑。</li>
+                </ul>
+
+                <blockquote>
+                    "Design is not just what it looks like and feels like. Design is how it works." —— Steve Jobs (在代码层面同样适用)
+                </blockquote>
+
+                <h3>2. 核心代码逻辑</h3>
+                <p>以下是处理线框像素化的基础函数示例：</p>
+                <pre><code>function drawWireframe(ctx, x, y, size) {
+  ctx.beginPath();
+  ctx.strokeStyle = '#00bac4';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(x, y, size, size);
+  if (size > 10) {
+    drawWireframe(ctx, x + 5, y + 5, size - 10);
+  }
+}</code></pre>
+
+                <h3>3. 总结</h3>
+                <p>我们正在经历一个从<em>所见即所得</em>到<em>所思即所得</em>的转变过程。</p>
+
+                <!-- 评论区 -->
+                <section class="comment-section">
+                    <div class="comment-header">
+                        <span class="text-accent">//</span> COMMENTS (03)
+                    </div>
+
+                    <div class="comment-item">
+                        <div class="comment-meta">
+                            <span class="author"><a href="https://example.com" target="_blank">// ArtSeeker_01</a></span>
+                            <span>> 2024-05-17 10:22</span>
+                        </div>
+                        <div class="comment-body">
+                            这种线框图的生成逻辑非常精妙。在 Joshua Davis 的风格中，这种透明感确实体现了你所说的“技术诚实感”。
+                        </div>
+                        <div class="comment-actions">
+                            <a href="#">[Reply]</a>
+                            <a href="#">[Quote]</a>
+                        </div>
+
+                        <div class="nested-comments">
+                            <div class="comment-item">
+                                <div class="comment-meta">
+                                    <span class="author"><a href="#">// s5s5</a></span>
+                                    <span>> 2024-05-17 11:05</span>
+                                </div>
+                                <div class="comment-body">
+                                    谢谢。其实透明感在现代设计中也很有意义，它让复杂的结构变得可以被理解。
+                                </div>
+                                <div class="comment-actions">
+                                    <a href="#">[Reply]</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 留言表单 -->
+                    <div class="comment-form">
+                        <div class="form-title">// Post a Comment</div>
+                        <textarea class="comment-textarea" placeholder="Enter your thoughts here..."></textarea>
+
+                        <div class="flex flex-col gap-3">
+                            <div class="grid grid-cols-2 gap-3">
+                                <input type="text" class="form-input" placeholder="Name">
+                                <input type="text" class="form-input" placeholder="Email (optional)">
+                            </div>
+                            <div class="grid grid-cols-[1fr_auto] gap-3">
+                                <input type="text" class="form-input" placeholder="Website (optional)">
+                                <button class="submit-btn">Execute Post</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <a href="#" class="read-more px-4 py-1 border border-dim text-[10px] uppercase mt-4 inline-block">End of Log</a>
+        </article>
+
+        <div class="pagination">
+            <div class="page-btn">[PREV]</div>
+            <div class="page-btn active">1</div>
+            <div class="page-btn">2</div>
+            <div class="page-btn">3</div>
+            <div class="opacity-20">...</div>
+            <div class="page-btn">14</div>
+            <div class="page-btn">[NEXT]</div>
+        </div>
+    </main>
+
+    <aside class="column sidebar-right">
+        <div class="stat-label">Identification</div>
+        <div class="profile-section">
+            <div class="logo-placeholder">
+                <div class="absolute -top-1 -left-1 w-2 h-2 border-t border-l border-cyan-400"></div>
+                <div class="absolute -bottom-1 -right-1 w-2 h-2 border-b border-r border-cyan-400"></div>
+            </div>
+            <div class="text-white text-lg font-bold tracking-tighter mb-1">Xiaochao Liu</div>
+            <div class="text-cyan-400 text-[10px] uppercase tracking-widest mb-4">Front-end</div>
+
+            <div class="space-y-2 mt-4 text-[10px]">
+                <div class="flex items-center gap-2 text-dim"><span class="w-12">Loc:</span><span class="text-white">Chengdu, China</span></div>
+                <div class="flex items-center gap-2 text-dim"><span class="w-12">In:</span><a href="#" class="text-white hover:text-accent underline">linkedin.com/in/s5s5</a></div>
+                <div class="flex items-center gap-2 text-dim"><span class="w-12">Git:</span><a href="#" class="text-white hover:text-accent underline">github.com/s5s5</a></div>
+                <div class="flex items-center gap-2 text-dim"><span class="w-12">Mail:</span><a href="#" class="text-white hover:text-accent underline">s5s5cn@gmail.com</a></div>
+            </div>
+        </div>
+
+        <div class="stat-label">Calendar</div>
+        <div class="calendar-container">
+            <div class="calendar-header">
+                <div class="calendar-nav-btn" id="prevMonth">[&lt;]</div>
+                <div class="calendar-title" id="calDisplay">// LOADING...</div>
+                <div class="calendar-nav-btn" id="nextMonth">[&gt;]</div>
+            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+        </div>
+
+        <div class="stat-box">
+            <h4 class="stat-label">Terminal</h4>
+            <div class="bg-black p-3 text-[9px] font-light border border-white/5 opacity-60">
+                <div class="text-cyan-400">> weather.sense()</div>
+                <div class="text-white">States: [S, O, C, R, Sn, F]</div>
+                <div class="text-dim">Mapping hollow artifacts...</div>
+            </div>
+        </div>
+    </aside>
+</div>
+
+<footer>
+    ©️ 2025 [米随随] s5s5. All rights reserved. 蜀ICP备16014041号-1
+</footer>
+
+<script>
+  let viewDate = new Date();
+  const monthNames = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
+
+  function buildCalendar() {
+    const grid = document.getElementById('calendarGrid');
+    const display = document.getElementById('calDisplay');
+    grid.innerHTML = '';
+
+    const year = viewDate.getFullYear();
+    const month = viewDate.getMonth();
+    const today = new Date();
+    display.innerText = `// ${monthNames[month]} ${year}`;
+
+    ['S', 'M', 'T', 'W', 'T', 'F', 'S'].forEach(d => {
+      const el = document.createElement('div');
+      el.className = 'calendar-day opacity-30';
+      el.innerText = d;
+      grid.appendChild(el);
+    });
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    for (let i = 0; i < firstDay; i++) {
+      grid.appendChild(document.createElement('div'));
+    }
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dayEl = document.createElement('div');
+      dayEl.className = 'calendar-day active';
+      if (d === today.getDate() && month === today.getMonth() && year === today.getFullYear()) dayEl.classList.add('today');
+      dayEl.innerText = d;
+      grid.appendChild(dayEl);
+    }
+  }
+
+  function initCalendarNav() {
+    document.getElementById('prevMonth').onclick = () => { viewDate.setMonth(viewDate.getMonth() - 1); buildCalendar(); };
+    document.getElementById('nextMonth').onclick = () => { viewDate.setMonth(viewDate.getMonth() + 1); buildCalendar(); };
+  }
+
+  function initArt() {
+    const canvases = document.querySelectorAll('.art-canvas');
+    canvases.forEach(canvas => {
+      const ctx = canvas.getContext('2d');
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+      const weather = canvas.dataset.weather || 'sunny';
+      drawWeatherArt(ctx, canvas.width, canvas.height, weather);
+    });
+  }
+
+  function drawWeatherArt(ctx, w, h, weather) {
+    ctx.clearRect(0, 0, w, h);
+    const pixelSize = 4;
+    const accent = '#00bac4';
+    const count = 120;
+
+    for(let i=0; i<count; i++) {
+      ctx.strokeStyle = Math.random() > 0.8 ? accent : 'rgba(255,255,255,0.1)';
+      ctx.lineWidth = 1;
+      const gridX = Math.floor(Math.random() * (w / pixelSize)) * pixelSize;
+      const gridY = Math.floor(Math.random() * (h / pixelSize)) * pixelSize;
+      const size = Math.floor(Math.random() * 12 + 2) * pixelSize;
+
+      ctx.beginPath();
+      switch(weather) {
+        case 'sunny':
+          if (Math.random() > 0.5) ctx.arc(gridX, gridY, size/2, 0, Math.PI * 2);
+          else { ctx.moveTo(gridX-size, gridY); ctx.lineTo(gridX+size, gridY); ctx.moveTo(gridX, gridY-size); ctx.lineTo(gridX, gridY+size); }
+          break;
+        case 'overcast':
+          ctx.strokeRect(gridX, gridY, size, pixelSize*2);
+          break;
+        case 'cloudy':
+          ctx.strokeRect(gridX, gridY, size, size);
+          if(Math.random() > 0.7) ctx.strokeRect(gridX + pixelSize, gridY + pixelSize, size, size);
+          break;
+        case 'rainy':
+          ctx.moveTo(gridX, gridY); ctx.lineTo(gridX, gridY + size * 2);
+          break;
+        case 'snowy':
+          ctx.moveTo(gridX-size/2, gridY); ctx.lineTo(gridX+size/2, gridY); ctx.moveTo(gridX, gridY-size/2); ctx.lineTo(gridX, gridY+size/2);
+          break;
+        case 'foggy':
+          ctx.moveTo(gridX, gridY); ctx.lineTo(gridX + size, gridY);
+          break;
+      }
+      ctx.stroke();
+    }
+  }
+
+  window.onload = () => {
+    buildCalendar();
+    initCalendarNav();
+    initArt();
+  };
+  window.addEventListener('resize', initArt);
+</script>
+</body>
+</html>

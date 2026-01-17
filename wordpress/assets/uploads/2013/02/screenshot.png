@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<link rel='stylesheet' href='http://s5s5.me/wp-content/plugins/wp-minify/min/?f=wp-content/themes/hybrid/style.min.css,wp-content/plugins/wp-syntax/css/wp-syntax.css&amp;m=1361107817' type='text/css' media='screen' />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>404 Not Found</title>
+<link rel="profile" href="http://gmpg.org/xfn/11" />
+<link rel="pingback" href="http://s5s5.me/xmlrpc.php" />
+<meta name="generator" content="WordPress 3.5.1" />
+<meta name="template" content="Hybrid 1.2" />
+<link rel="alternate" type="application/rss+xml" title="[米随随] s5s5 &raquo; Feed" href="http://s5s5.me/feed" />
+<link rel="alternate" type="application/rss+xml" title="[米随随] s5s5 &raquo; 评论 Feed" href="http://s5s5.me/comments/feed" />
+<script type='text/javascript' src='http://s5s5.me/wp-content/plugins/wp-sns-share/wp-sns-share.js?ver=2.6.1'></script>
+<script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js?ver=1.6.1'></script>
+<script type='text/javascript' src='http://s5s5.me/wp-content/plugins/jquery-image-lazy-loading/javascripts/jquery.lazyload.mini.js?ver=1.5.0'></script>
+<script type='text/javascript' src='http://s5s5.me/wp-content/plugins/google-analyticator/external-tracking.min.js?ver=6.4.3'></script>
+<link rel="EditURI" type="application/rsd+xml" title="RSD" href="http://s5s5.me/xmlrpc.php?rsd" />
+<link rel="wlwmanifest" type="application/wlwmanifest+xml" href="http://s5s5.me/wp-includes/wlwmanifest.xml" />
+<script type="text/javascript" src="http://s5s5.me/wp-content/plugins/audio-player/assets/audio-player.js?ver=2.0.4.6"></script>
+<script type="text/javascript">AudioPlayer.setup("http://s5s5.me/wp-content/plugins/audio-player/assets/player.swf?ver=2.0.4.6", {width:"290",animation:"yes",encode:"yes",initialvolume:"60",remaining:"no",noinfo:"no",buffer:"5",checkpolicy:"no",rtl:"no",bg:"E5E5E5",text:"333333",leftbg:"CCCCCC",lefticon:"333333",volslider:"666666",voltrack:"FFFFFF",rightbg:"B4B4B4",rightbghover:"999999",righticon:"333333",righticonhover:"FFFFFF",track:"FFFFFF",loader:"009900",border:"CCCCCC",tracker:"DDDDDD",skip:"666666",pagebg:"FFFFFF",transparentpagebg:"yes"});</script>
+<script type="text/javascript">
+jQuery(document).ready(function($){
+  if (navigator.platform == "iPad") return;
+  jQuery("img").not(".cycle img").lazyload({
+    effect:"fadeIn",
+    placeholder: "http://s5s5.me/wp-content/plugins/jquery-image-lazy-loading/images/grey.gif"
+  });
+});
+</script><!-- Google Analytics Tracking by Google Analyticator 6.4.3: http://www.videousermanuals.com/google-analyticator/ -->
+<script type="text/javascript">window.google_analytics_uacct = "pub-5763335573474975";</script>
+<script type="text/javascript">
+	var analyticsFileTypes = [''];
+	var analyticsEventTracking = 'enabled';
+</script>
+<script type="text/javascript">
+	var _gaq = _gaq || [];
+	_gaq.push(['_setAccount', 'UA-53081-1']);
+        _gaq.push(['_addDevId', 'i9k95']); // Google Analyticator App ID with Google
+	_gaq.push(['_trackPageview']);
+	(function() {
+		var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+		ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+	})();
+</script>
+</head>
+<body class="wordpress ltr zh_CN parent-theme y2013 m02 d25 h22 monday logged-out error-404 primary-inactive secondary-inactive subsidiary-inactive no-widgets">
+<div id="body-container">
+	<div id="header-container">
+		<div id="header">
+			<div id="site-title"><a  href="http://s5s5.me" title="[米随随] s5s5" rel="home"><span>[米随随] s5s5</span></a></div><div id="site-description"><span>本站是基于人类交互的，您的想象决定了我们的应用！</span></div>
+		</div><!-- #header -->
+	</div><!-- #header-container -->
+	<div id="container">
+	<div id="content" class="hfeed content">
+		<div class="breadcrumb-trail breadcrumbs" itemprop="breadcrumb"><span class="trail-before">Browse:</span> <span class="trail-begin"><a  href="http://s5s5.me" title="[米随随] s5s5" rel="home" class="trail-begin">Home</a></span> <span class="sep">/</span> <span class="trail-end">404 Not Found</span></div>
+			<div id="post-0" class="hentry error">
+				<h1 class="error-404-title entry-title">Not Found</h1>
+				<div class="entry-content">
+					<p>
+					You tried going to <code>http://s5s5.me/wp-content/themes/smells-like-facebook/screenshot.png</code>, and it doesn't exist. All is not lost! You can search for what you're looking for.					</p>
+								<div id="search-1" class="search">
+				<form method="get" class="search-form" id="search-form-1" action="http://s5s5.me/">
+				<div>
+					<input class="search-text" type="text" name="s" id="search-text-1" value="Search this site..." onfocus="if(this.value==this.defaultValue)this.value='';" onblur="if(this.value=='')this.value=this.defaultValue;" />
+					<input class="search-submit button" name="submit" type="submit" id="search-submit-1" value="Search" />
+				</div>
+				</form><!-- .search-form -->
+			</div><!-- .search -->
+				</div><!-- .entry-content -->
+			</div><!-- .hentry -->
+	</div><!-- .content .hfeed -->
+	</div><!-- #container -->
+	<div id="footer-container">
+		<div id="footer">
+			<div class="footer-content footer-insert"><p class="copyright"><a  href="/sitemap">SiteMap</a>. <a  href="/about">About</a>. <a  href="/link">Link</a>. Copyright &#169; 2013 <a  class="site-link" href="http://s5s5.me" title="[米随随] s5s5" rel="home"><span>[米随随] s5s5</span></a>.</p>
+<p class="credit">Powered by <a  class="wp-link external" href="http://wordpress.org" title="State-of-the-art semantic personal publishing platform" target="_blank"><span>WordPress</span></a> and <a  class="theme-link external" href="http://themehybrid.com/themes/hybrid" title="Hybrid WordPress Theme" target="_blank"><span>Hybrid</span></a>.</p>
+<script type="text/javascript"><!--
+google_ad_client = "ca-pub-5763335573474975";
+/* 大广告 */
+google_ad_slot = "4461488364";
+google_ad_width = 728;
+google_ad_height = 90;
+//-->
+</script>
+<script type="text/javascript"
+src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+</script>
+<div> <a  class="login-link" href="http://s5s5.me/wp-login.php?redirect_to=http%3A%2F%2Fs5s5.me%2Fwp-content%2Fthemes%2Fsmells-like-facebook%2Fscreenshot.png" title="Log in">Log in</a></div>
+<div style="position:absolute;top:130px;left: 50%;margin-left:345px;">
+<iframe src="http://follow.v.t.qq.com/index.php?c=follow&a=quick&name=misuisui&style=5&t=1331127316869&f=0" frameborder="0" scrolling="auto" width="63" height="24" marginwidth="0" marginheight="0" allowtransparency="true"></iframe>
+<iframe width="63" height="24" frameborder="0" allowtransparency="true" marginwidth="0" marginheight="0" scrolling="no" border="0" src="http://widget.weibo.com/relationship/followbutton.php?language=zh_cn&width=63&height=24&uid=1409563467&style=1&btn=light&dpc=1"></iframe>
+</div>
+<script type="text/javascript" src="http://tajs.qq.com/stats?sId=13528416" charset="UTF-8"></script>
+</div>
+		</div><!-- #footer -->
+	</div><!-- #footer-container -->
+</div><!-- #body-container -->
+<script type='text/javascript' src='http://s5s5.me/wp-content/themes/hybrid/library/js/drop-downs.min.js?ver=20110920'></script>
+</body>
+</html>
